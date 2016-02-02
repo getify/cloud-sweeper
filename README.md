@@ -2,7 +2,9 @@
 
 Swoop your plane around to sweep away the clouds and keep the skies sunny!
 
-<img src="resources/screenshot.png" width="400">
+<a href="https://rawgit.com/getify/cloud-sweeper/master/web/index.html"><img src="resources/screenshot.png" width="400"></a>
+
+<a href="https://rawgit.com/getify/cloud-sweeper/master/web/index.html">demo play</a>
 
 ## About
 
