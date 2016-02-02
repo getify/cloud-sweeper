@@ -189,7 +189,7 @@
        xlink:href="#linearGradient23805"
        id="radialGradient23781"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.1727273,0,0,0.31088464,380.72728,368.67674)"
+       gradientTransform="matrix(1.1727273,0,0,0.31088464,380.72728,347.97941)"
        cx="210"
        cy="535"
        fx="210"
@@ -200,7 +200,7 @@
        xlink:href="#linearGradient23805"
        id="radialGradient23797"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.1727273,0,0,0.31088464,27.72728,368.67674)"
+       gradientTransform="matrix(1.1727273,0,0,0.31088464,27.72728,347.97941)"
        cx="210"
        cy="535"
        fx="210"
@@ -215,7 +215,7 @@
        fx="298.5"
        fy="404.00003"
        r="68"
-       gradientTransform="matrix(1,0,0,0.52496046,50,191.91598)"
+       gradientTransform="matrix(1,0,0,0.52496046,50,171.21865)"
        gradientUnits="userSpaceOnUse" />
     <filter
        style="color-interpolation-filters:sRGB"
@@ -257,8 +257,8 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.99216301"
-     inkscape:cx="433.26666"
+     inkscape:zoom="1.0803197"
+     inkscape:cx="399.94319"
      inkscape:cy="298.48824"
      inkscape:document-units="px"
      inkscape:current-layer="layer47"
@@ -273,7 +273,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -281,10 +281,10 @@
      inkscape:groupmode="layer"
      id="layer42"
      inkscape:label="ground"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <g
        id="g23749"
-       transform="translate(49,-16)">
+       transform="translate(49,-36.697327)">
       <path
          sodipodi:nodetypes="sssss"
          inkscape:connector-curvature="0"
@@ -302,11 +302,10 @@
      inkscape:groupmode="layer"
      id="layer36"
      inkscape:label="hangar"
-     style="display:inline"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <g
        id="g23665"
-       transform="translate(62.19414,0)">
+       transform="translate(62.19414,-20.697327)">
       <path
          sodipodi:nodetypes="ccccssc"
          inkscape:connector-curvature="0"
@@ -450,11 +449,10 @@
      inkscape:groupmode="layer"
      id="layer37"
      inkscape:label="plane"
-     style="display:inline;opacity:0.45500004"
-     sodipodi:insensitive="true">
+     style="display:inline;opacity:0.45500004">
     <g
        id="g23073"
-       transform="translate(31.615224,-2.8284271)">
+       transform="translate(31.615224,-23.525754)">
       <ellipse
          ry="4.7157087"
          rx="4.3880072"
@@ -824,11 +822,10 @@
      inkscape:groupmode="layer"
      id="layer44"
      inkscape:label="buttons"
-     style="display:inline"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <rect
        ry="17.510439"
-       y="500.8027"
+       y="480.10538"
        x="498"
        height="68.394623"
        width="258"
@@ -837,7 +834,7 @@
     <g
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';letter-spacing:-3.26999998px;word-spacing:6.26000261px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="text23787"
-       transform="translate(50,0)">
+       transform="translate(50,-20.697327)">
       <path
          d="m 485.32,550 0,-30 16.68,0 0,3.32 -10,0 0,10 6.68,0 0,3.36 -6.68,0 0,13.32 -6.68,0 z"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Silom;-inkscape-font-specification:Silom;letter-spacing:-3.26999998px;word-spacing:6.26000261px"
@@ -885,12 +882,12 @@
        width="258"
        height="68.394623"
        x="145"
-       y="500.8027"
+       y="480.10538"
        ry="17.510439" />
     <g
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';letter-spacing:-3.26999998px;word-spacing:6.26000261px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="text23793"
-       transform="translate(50,0)">
+       transform="translate(50,-20.697327)">
       <path
          d="m 157.32,533.32 10,0 0,10 q 0,3.36 -2.12,5.04 -2.12,1.64 -4.52,1.64 l -6.68,0 q -2.72,0 -4.72,-1.96 -1.96,-1.96 -1.96,-4.72 l 0,-16.64 q 0,-2.72 1.92,-4.68 1.96,-2 4.76,-2 l 6.68,0 q 6.28,0 6.64,6.68 l -3.32,0 q -0.4,-3.36 -3.32,-3.36 l -3.36,0 q -1.36,0 -2.36,1 -0.96,0.96 -0.96,2.36 l 0,16.64 q 0,1.4 0.96,2.4 1,0.96 2.36,0.96 3.2,-0.16 3.36,-3.36 l 0,-6.64 -3.36,0 0,-3.36 z"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Silom;-inkscape-font-specification:Silom;letter-spacing:-3.26999998px;word-spacing:6.26000261px"
@@ -927,11 +924,10 @@
      inkscape:groupmode="layer"
      id="layer45"
      inkscape:label="best badge"
-     style="display:inline"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <rect
        ry="17.510439"
-       y="369.8027"
+       y="349.10538"
        x="282"
        height="68.394623"
        width="133"
@@ -940,7 +936,7 @@
     <g
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter25227)"
        id="text23855"
-       transform="translate(50,0)">
+       transform="translate(50,-20.697327)">
       <path
          d="m 273.17875,395 0,-19.6875 8.7675,0 q 1.785,0 3.07125,1.3125 1.28625,1.28625 1.28625,3.07125 l 0,1.07625 q 0,1.9425 -1.1025,3.045 -1.07625,1.07625 -3.255,1.33875 2.17875,0 3.255,1.33875 1.1025,1.3125 1.1025,3.045 l 0,1.07625 q 0,1.785 -1.28625,3.0975 Q 283.73125,395 281.94625,395 l -8.7675,0 z m 4.38375,-10.94625 2.17875,0 q 0.91875,0 1.54875,-0.63 0.65625,-0.65625 0.65625,-1.54875 l 0,-2.17875 q 0,-0.91875 -0.65625,-1.54875 -0.63,-0.65625 -1.54875,-0.65625 l -2.17875,0 0,6.5625 z m 0,8.7675 2.17875,0 q 0.91875,0 1.54875,-0.65625 0.65625,-0.65625 0.65625,-1.54875 l 0,-2.17875 q 0,-2.17875 -2.205,-2.17875 l -2.17875,0 0,6.5625 z"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.25px;font-family:Silom;-inkscape-font-specification:Silom;letter-spacing:-1.71000004px;fill:#f2f153;fill-opacity:1;stroke:none;stroke-opacity:1"
@@ -967,17 +963,16 @@
      inkscape:groupmode="layer"
      id="layer46"
      inkscape:label="best score"
-     style="display:inline"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <text
        sodipodi:linespacing="125%"
        id="text23859"
-       y="429"
+       y="408.30267"
        x="324"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:Silom;-inkscape-font-specification:Silom;letter-spacing:-1.71000004px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
-         y="429"
+         y="408.30267"
          x="324"
          id="tspan23861"
          sodipodi:role="line">73</tspan></text>
@@ -1049,7 +1044,7 @@
      inkscape:groupmode="layer"
      id="layer43"
      inkscape:label="game over"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true">
     <g
        transform="translate(-92,-39)"

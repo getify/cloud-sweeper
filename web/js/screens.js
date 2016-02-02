@@ -12,9 +12,9 @@ var Screens = (function Screens(){
 			width: 900,
 			height: 750,
 			hitAreas: [
-				{ x1: 635, y1: 160, x2: 815, y2: 265, },	// easy
-				{ x1: 695, y1: 345, x2: 875, y2: 450, },	// medium
-				{ x1: 600, y1: 520, x2: 780, y2: 625, },	// hard
+				{ x1: 605, y1: 130, x2: 845, y2: 295, },	// easy
+				{ x1: 665, y1: 315, x2: 905, y2: 480, },	// medium
+				{ x1: 570, y1: 490, x2: 810, y2: 655, },	// hard
 			],
 			scaled: {
 				cnv: document.createElement("canvas"),
@@ -27,9 +27,9 @@ var Screens = (function Screens(){
 			width: 900,
 			height: 600,
 			hitAreas: [
-				{ x1: 285, y1: 400, x2: 413, y2: 432, },	// best score badge
-				{ x1: 140, y1: 500, x2: 400, y2: 570, },	// go back
-				{ x1: 495, y1: 500, x2: 755, y2: 570, },	// fly again
+				{ x1: 285, y1: 380, x2: 413, y2: 412, },	// best score badge
+				{ x1: 110, y1: 450, x2: 430, y2: 580, },	// go back
+				{ x1: 465, y1: 450, x2: 785, y2: 580, },	// fly again
 			],
 			scaled: {
 				cnv: document.createElement("canvas"),
