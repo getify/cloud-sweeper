@@ -338,7 +338,7 @@
 
 			// respond to button press?
 			if (buttonPressed != null) {
-				Utils.onEvent(document,evtNames,onInteraction);
+				Utils.offEvent(document,evtNames,onInteraction);
 				if (buttonPressed === 0) {
 					gameState.difficulty = GAME_EASY;
 				}
