@@ -1,0 +1,36 @@
+@-ms-viewport, @viewport {
+	orientation: landscape;
+	zoom: 1;
+	min-zoom: 1;
+	max-zoom: 1;
+	user-zoom: fixed;
+    width: device-width;
+}
+
+html {
+	box-sizing: border-box;
+}
+
+*, *:before, *:after {
+	box-sizing: inherit;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+
+html, body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	cursor: pointer;
+}
+
+#scene {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 10;
+	background-color: #BAE6F5;
+	cursor: pointer;
+}
