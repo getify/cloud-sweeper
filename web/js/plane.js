@@ -31,7 +31,7 @@ var Plane = (function Plane(){
 		getHitAreas: getHitAreas,
 		define: define,
 		load: load,
-		getPiece: getPiece,
+		getPlane: getPlane,
 		tick: tick,
 	};
 
@@ -137,7 +137,7 @@ var Plane = (function Plane(){
 		return scaledAndRotatedHitAreas;
 	}
 
-	function getPiece() {
+	function getPlane() {
 		if (dirty || degrees !== lastDegrees) {
 			lastDegrees = degrees;
 			dirty = false;

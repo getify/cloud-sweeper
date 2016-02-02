@@ -67,20 +67,12 @@
 	.then(startWelcomeEntering);
 
 
-	// respond to window resizes
+	// respond to window resizes/reorientation
 	Utils.onEvent(window,"resize",Utils.debounce(onResize,100));
 
-	Utils.onEvent(window,"contextmenu",function onmenu(evt){
-		evt.preventDefault();
-		evt.stopPropagation();
-		evt.stopImmediatePropagation();
-	});
-
-	Utils.onEvent(document,"selectstart",function onselect(evt){
-		evt.preventDefault();
-		evt.stopPropagation();
-		evt.stopImmediatePropagation();
-	});
+	// normalize long-touch/drag on canvas
+	Utils.onEvent(window,"contextmenu",disableEvent);
+	Utils.onEvent(document,"selectstart",disableEvent);
 
 
 	// ******************************
@@ -364,6 +356,8 @@
 		for (var i=0; i<gameState.foregroundCloud.length; i++) {
 			Clouds.recycleCloudObject(gameState.foregroundCloud[i]);
 		}
+		gameState.backgroundClouds.length = gameState.gameClouds.length =
+			gameState.foregroundCloud.length = 0;
 	}
 
 	function waitAtRetryScreen() {
@@ -455,6 +449,8 @@
 	}
 
 	function initGame() {
+		gameState.RAFhook = null;
+
 		gameState.bestCloudScore = gameState.bestCloudScore || {};
 		gameState.bestCloudScore[GAME_EASY] = gameState.bestCloudScore[GAME_EASY] || 0;
 		gameState.bestCloudScore[GAME_MEDIUM] = gameState.bestCloudScore[GAME_MEDIUM] || 0;
@@ -1163,7 +1159,7 @@
 
 		sceneCtx.globalAlpha = 1;
 
-		var plane = Plane.getPiece();
+		var plane = Plane.getPlane();
 		sceneCtx.drawImage(plane.cnv,gameState.planeX,gameState.planeY);
 
 		// gray out screen to simulate clouding out the sun
@@ -1214,7 +1210,7 @@
 			sceneCtx.drawImage(cloud.cnv,cloud.x,cloud.y);
 		}
 
-		var plane = Plane.getPiece();
+		var plane = Plane.getPlane();
 		sceneCtx.drawImage(plane.cnv,gameState.planeX,gameState.planeY);
 
 		for (var i=0; i<gameState.gameClouds.length; i++) {
