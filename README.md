@@ -18,6 +18,10 @@ So far, it's been tested at a fairly smooth ~57-60fps performance on:
 
 Obviously, this is a work in progress. There's much to do. Help is definitely appreciated!
 
+## App Model
+
+Disclaimer: this may turn into a mobile app that may or may not eventually have some monetary model around it. Just be aware of that if you decide to participate in any way.
+
 ## License & Copyright
 
 The materials herein are all (c) 2016 Kyle Simpson.
