@@ -1,0 +1,7 @@
+{
+	"short_name": "Cloud Sweeper",
+	"name": "Cloud Sweeper Game",
+	"start_url": "/index.html",
+	"display": "fullscreen",
+	"orientation": "landscape"
+}
