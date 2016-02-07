@@ -260,6 +260,15 @@
 		}
 	}
 
+	function detectEscape(evt) {
+		evt.preventDefault();
+
+		if (detectKey(evt) == KEYBOARD_ESC) {
+			gameState.playEntering = false;
+			waitAtRetryScreen();
+		}
+	}
+
 	function manageBestCloudScore() {
 		gameState.bestCloudScore[gameState.difficulty] =
 			Math.max(
@@ -649,15 +658,6 @@
 		gameState.welcomeLeavingTickCount = gameState.welcomeEnteringTickCount;
 
 		gameState.RAFhook = requestAnimationFrame(runWelcomeLeaving);
-	}
-
-	function detectEscape(evt) {
-		evt.preventDefault();
-
-		if (detectKey(evt) == KEYBOARD_ESC) {
-			gameState.playEntering = false;
-			waitAtRetryScreen();
-		}
 	}
 
 	function startPlayEntering() {
@@ -1179,16 +1179,11 @@
 		}
 
 		if (countdown) {
-			var tmp0 = Text.getText("big","0")[0];
-			var numChar = Text.getText("big",String(countdown))[0];
-
-			var ratio = gameState.planeSize / tmp0.width / 2.5;
-			var width = numChar.width * ratio;
-			var height = numChar.height * ratio;
-			var x = ((viewportDims.width - width) / 2);
+			var numChar = Text.getCachedCharacter("countdown:" + countdown);
+			var x = ((viewportDims.width - numChar.cnv.width) / 2);
 			var y = 25;
 
-			sceneCtx.drawImage(numChar,x,y,width,height);
+			sceneCtx.drawImage(numChar.cnv,x,y,numChar.cnv.width,numChar.cnv.height);
 		}
 
 		showFramerate();
@@ -1285,29 +1280,36 @@
 
 		// calculate score dimensions
 		var tmp0 = Text.getText("small","0")[0];
-		var score = Text.getText("small",String(gameState.cloudScore));
+		var scoreDigits = Text.getText("small",String(gameState.cloudScore));
 
 		var actualScoreWidth = 0;
 		var actualScoreHeight = 0;
-		for (var i=0; i<score.length; i++) {
-			actualScoreWidth += score[i].width;
-			actualScoreHeight = Math.max(actualScoreHeight,score[i].height);
+		for (var i=0; i<scoreDigits.length; i++) {
+			actualScoreWidth += scoreDigits[i].width;
+			actualScoreHeight = Math.max(actualScoreHeight,scoreDigits[i].height);
 		}
 
 		// sizing the score text to fit comfortably within the scoreboard
-		var ratio = (score.length === 1) ?
+		var ratio = (scoreDigits.length === 1) ?
 				0.5 * scoreboard.scaled.size / tmp0.height :
-				0.55 * scoreboard.scaled.size / (tmp0.width * score.length);
-		var scoreHeight = Math.ceil(ratio * actualScoreHeight);
+				0.55 * scoreboard.scaled.size / (tmp0.width * scoreDigits.length);
 		var scoreWidth = Math.ceil(ratio * actualScoreWidth);
+		var scoreHeight = Math.ceil(ratio * actualScoreHeight);
 		var scoreX = scoreboard.x + ((scoreboard.scaled.size-scoreWidth) / 2);
 		var scoreY = scoreboard.y + ((scoreboard.scaled.size-scoreHeight) / 2);
 
-		// display score text
-		for (var i=0; i<score.length; i++) {
-			var charWidth = score[i].width * ratio;
-			sceneCtx.drawImage(score[i],scoreX,scoreY,charWidth,scoreHeight);
-			scoreX += charWidth;
+		// scale and cache all digits, if needed
+		cacheScaledDigits("small","scoreboard",ratio,scoreHeight);
+
+		// display score text one character at a time
+		for (var i=0; i<scoreDigits.length; i++) {
+			var scoreDigit = String(gameState.cloudScore).charAt(i);
+			var digitWidth = Math.ceil(scoreDigits[i].width * ratio);
+			var scaledCachedDigit = Text.getCachedCharacter("scoreboard:" + scoreDigit);
+
+			// draw score character
+			sceneCtx.drawImage(scaledCachedDigit.cnv,scoreX,scoreY);
+			scoreX += digitWidth;
 		}
 
 		// draw sun-meter
@@ -1414,18 +1416,18 @@
 			var bestScoreBadgeHeight = screen.hitAreas[0].y2 - screen.hitAreas[0].y1 + 1;
 
 			var tmp0 = Text.getText("small","0")[0];
-			var bestScore = Text.getText("small",String(gameState.bestCloudScore[gameState.difficulty]));
+			var bestScoreDigits = Text.getText("small",String(gameState.bestCloudScore[gameState.difficulty]));
 
 			var actualScoreWidth = 0;
 			var actualScoreHeight = 0;
-			for (var i=0; i<bestScore.length; i++) {
-				actualScoreWidth += bestScore[i].width;
-				actualScoreHeight = Math.max(actualScoreHeight,bestScore[i].height);
+			for (var i=0; i<bestScoreDigits.length; i++) {
+				actualScoreWidth += bestScoreDigits[i].width;
+				actualScoreHeight = Math.max(actualScoreHeight,bestScoreDigits[i].height);
 			}
 
 			// sizing the score text to fit comfortably within the best-score badge
 			var ratio = 0.9 * Math.min(
-				bestScoreBadgeWidth / (tmp0.width * bestScore.length),
+				bestScoreBadgeWidth / (tmp0.width * bestScoreDigits.length),
 				bestScoreBadgeHeight / tmp0.height
 			);
 			var scoreHeight = Math.ceil(ratio * actualScoreHeight);
@@ -1433,11 +1435,18 @@
 			var scoreX = bestScoreBadgeX + ((bestScoreBadgeWidth-scoreWidth) / 2);
 			var scoreY = bestScoreBadgeY + ((bestScoreBadgeHeight-scoreHeight) / 2);
 
-			// display best-score text
-			for (var i=0; i<bestScore.length; i++) {
-				var charWidth = bestScore[i].width * ratio;
-				sceneCtx.drawImage(bestScore[i],scoreX,scoreY,charWidth,scoreHeight);
-				scoreX += charWidth;
+			// scale and cache all digits, if needed
+			cacheScaledDigits("small","bestscore",ratio,scoreHeight);
+
+			// display best-score text one character at a time
+			for (var i=0; i<bestScoreDigits.length; i++) {
+				var scoreDigit = String(gameState.cloudScore).charAt(i);
+				var digitWidth = Math.ceil(bestScoreDigits[i].width * ratio);
+				var scaledCachedDigit = Text.getCachedCharacter("bestscore:" + scoreDigit);
+
+				// draw best-score character
+				sceneCtx.drawImage(scaledCachedDigit.cnv,scoreX,scoreY);
+				scoreX += digitWidth;
 			}
 		}
 
@@ -1464,6 +1473,28 @@
 		}
 
 		showFramerate();
+	}
+
+	function cacheScaledDigits(textType,cacheIDPrefix,scaleRatio,digitHeight) {
+		var digits = Text.getText(textType,"0123456789");
+
+		for (var i=0; i<=9; i++) {
+			var digit = String(i);
+			var cacheItem = Text.getCachedCharacter(cacheIDPrefix + ":" + digit);
+			var digitImg = digits[i];
+			var digitWidth = Math.ceil(digitImg.width * scaleRatio);
+
+			// need to (re)cache digit?
+			if (cacheItem.cnv.width != digitWidth || cacheItem.cnv.height != digitHeight) {
+				cacheItem.cnv.width = digitWidth;
+				cacheItem.cnv.height = digitHeight;
+				cacheItem.ctx.drawImage(digitImg,0,0,digitWidth,digitHeight);
+			}
+			// digits already cached for this size, so bail
+			else {
+				return;
+			}
+		}
 	}
 
 	function shakeScene() {
@@ -1707,6 +1738,11 @@
 		gameOver.scaled.cnv.height = gameOver.scaled.height;
 		gameOver.x = (viewportDims.width - gameOver.scaled.width) / 2;
 		gameOver.scaled.ctx.drawImage(gameOver.img,0,0,gameOver.scaled.width,gameOver.scaled.height);
+
+		// scale and cache all countdown digits, if needed
+		var tmp0 = Text.getText("big","0")[0];
+		var ratio = gameState.planeSize / tmp0.width / 2.5;
+		cacheScaledDigits("big","countdown",ratio,Math.ceil(tmp0.height * ratio));
 
 		// resize during animation not supported
 		if (gameState.playEntering || gameState.playing || gameState.playLeaving ||

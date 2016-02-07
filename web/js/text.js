@@ -2,21 +2,27 @@ var Text = (function Text(){
 	"use strict";
 
 	var publicAPI,
-		characters = {
-			small: [
-				" ",
-				"0","1","2","3","4","5","6","7","8","9"
-			],
-			big: [
-				" ",
-				"0","1","2","3","4","5","6","7","8","9"
-			]
-		};
+		characters,
+		cache;
 
+	characters = {
+		small: [
+			" ",
+			"0","1","2","3","4","5","6","7","8","9"
+		],
+		big: [
+			" ",
+			"0","1","2","3","4","5","6","7","8","9"
+		],
+	};
+
+	cache = {};
 
 	publicAPI = {
 		load: load,
 		getText: getText,
+		cacheCharacter: cacheCharacter,
+		getCachedCharacter: getCachedCharacter,
 	};
 
 	return publicAPI;
@@ -82,6 +88,30 @@ var Text = (function Text(){
 				}
 			}
 		});
+	}
+
+	function cacheCharacter(cacheID) {
+		if (!cache[cacheID]) {
+			cache[cacheID] = {
+				cnv: document.createElement("canvas"),
+				ctx: null,
+			};
+			cache[cacheID].ctx = cache[cacheID].cnv.getContext("2d");
+			cache[cacheID].cnv.width = cache[cacheID].cnv.height = 0;
+		}
+
+		// clear canvas
+		cache[cacheID].cnv.width = cache[cacheID].cnv.width;
+
+		return cache[cacheID];
+	}
+
+	function getCachedCharacter(cacheID) {
+		if (!cache[cacheID]) {
+			cacheCharacter(cacheID);
+		}
+
+		return cache[cacheID];
 	}
 
 })();
