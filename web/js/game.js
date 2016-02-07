@@ -39,6 +39,7 @@
 		KEYBOARD_1 = 4,
 		KEYBOARD_2 = 5,
 		KEYBOARD_3 = 6,
+		BUILD_NUMBER = "Build 1.0.0",
 
 		gameState = {
 			difficulty: GAME_EASY,
@@ -88,6 +89,14 @@
 			sceneCtx.font = "20px sans-serif";
 			sceneCtx.fillStyle = "white";
 			sceneCtx.fillText(framerate,200,20);
+		}
+	}
+
+	function showBuildNumber(){
+		if(DEBUG){
+			sceneCtx.font = "20px sans-serif";
+			sceneCtx.fillStyle = "white";
+			sceneCtx.fillText(BUILD_NUMBER,300,20);
 		}
 	}
 
@@ -1143,6 +1152,7 @@
 		sceneCtx.globalAlpha = 1;
 
 		showFramerate();
+		showBuildNumber();
 	}
 
 	function drawIntro(drawOpacity,countdown,hintOpacity,showSunMeter) {
@@ -1187,6 +1197,7 @@
 		}
 
 		showFramerate();
+		showBuildNumber();
 	}
 
 	function drawGameScene() {
@@ -1257,6 +1268,7 @@
 		}
 
 		showFramerate();
+		showBuildNumber();
 	}
 
 	function darkenScene(drawOpacity) {
@@ -1473,6 +1485,7 @@
 		}
 
 		showFramerate();
+		showBuildNumber();
 	}
 
 	function cacheScaledDigits(textType,cacheIDPrefix,scaleRatio,digitHeight) {
