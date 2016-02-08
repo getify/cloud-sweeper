@@ -1,7 +1,7 @@
 (function Game(){
 	"use strict";
 
-	var buildNumber = "1.0",
+	var BUILD_NUMBER = "1.0.0",
 
 		viewportDims = {},
 
@@ -41,7 +41,6 @@
 		KEYBOARD_1 = 4,
 		KEYBOARD_2 = 5,
 		KEYBOARD_3 = 6,
-		BUILD_NUMBER = "Build 1.0.0",
 
 		gameState = {
 			difficulty: GAME_EASY,
@@ -51,9 +50,11 @@
 
 		DEBUG = true,
 		frameCount,
-		framerate = "-- fps",
+		framerate,
 		framerateTimestamp;
 
+
+	resetFramerate();
 
 	// initialize UI
 	Promise.all([
@@ -87,18 +88,20 @@
 	}
 
 	function showFramerate() {
+		sceneCtx.fillText(framerate + " fps",275,20);
+	}
+
+	function showBuild() {
+		sceneCtx.fillText("Build: " + BUILD_NUMBER,150,20);
+	}
+
+	function showDebugInfo() {
 		if (DEBUG) {
 			sceneCtx.font = "20px sans-serif";
 			sceneCtx.fillStyle = "white";
-			sceneCtx.fillText("Build: " + buildNumber + "     " + framerate,150,20);
-		}
-	}
 
-	function showBuildNumber(){
-		if(DEBUG){
-			sceneCtx.font = "20px sans-serif";
-			sceneCtx.fillStyle = "white";
-			sceneCtx.fillText(BUILD_NUMBER,300,20);
+			showFramerate();
+			showBuild();
 		}
 	}
 
@@ -295,7 +298,7 @@
 		var evtNames = "keydown keypress mousedown touchstart pointerstart";
 
 		framerateTimestamp = frameCount = null;
-		framerate = "-- fps";
+		resetFramerate();
 
 		// re-enable touch
 		enableTouch();
@@ -387,7 +390,7 @@
 		var evtNames = "keydown keypress mousedown touchstart pointerstart";
 
 		framerateTimestamp = frameCount = null;
-		framerate = "-- fps";
+		resetFramerate();
 
 		// re-enable touch
 		enableTouch();
@@ -1153,8 +1156,7 @@
 
 		sceneCtx.globalAlpha = 1;
 
-		showFramerate();
-		showBuildNumber();
+		showDebugInfo();
 	}
 
 	function drawIntro(drawOpacity,countdown,hintOpacity,showSunMeter) {
@@ -1198,8 +1200,7 @@
 			sceneCtx.drawImage(numChar.cnv,x,y,numChar.cnv.width,numChar.cnv.height);
 		}
 
-		showFramerate();
-		showBuildNumber();
+		showDebugInfo();
 	}
 
 	function drawGameScene() {
@@ -1269,8 +1270,7 @@
 			sceneCtx.restore();
 		}
 
-		showFramerate();
-		showBuildNumber();
+		showDebugInfo();
 	}
 
 	function darkenScene(drawOpacity) {
@@ -1486,8 +1486,7 @@
 			sceneCtx.restore();
 		}
 
-		showFramerate();
-		showBuildNumber();
+		showDebugInfo();
 	}
 
 	function cacheScaledDigits(textType,cacheIDPrefix,scaleRatio,digitHeight) {
@@ -2178,6 +2177,10 @@
 		}
 	}
 
+	function resetFramerate() {
+		framerate = "--";
+	}
+
 	function trackFramerate() {
 		if (DEBUG) {
 			if (framerateTimestamp == null) {
@@ -2190,7 +2193,7 @@
 				var now = Date.now();
 				if ((now - framerateTimestamp) >= 1000) {
 					var rate = frameCount / ((now - framerateTimestamp) / 1000);
-					framerate = rate.toFixed(1) + " fps";
+					framerate = rate.toFixed(1);
 					frameCount = 0;
 					framerateTimestamp = Date.now();
 				}
