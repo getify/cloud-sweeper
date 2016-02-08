@@ -1,7 +1,7 @@
 (function Game(){
 	"use strict";
 
-	var BUILD_NUMBER = "1.0.0",
+	var BUILD_NUMBER = "1.0.1",
 
 		viewportDims = {},
 
@@ -35,18 +35,9 @@
 		GAME_CLOUD = 1,
 		FOREGROUND_CLOUD = 2,
 
-		KEYBOARD_SPACE = 1,
-		KEYBOARD_ENTER = 2,
-		KEYBOARD_ESC = 3,
-		KEYBOARD_1 = 4,
-		KEYBOARD_2 = 5,
-		KEYBOARD_3 = 6,
-
 		gameState = {
 			difficulty: GAME_EASY,
 		},
-
-		touch_disabled = false,
 
 		DEBUG = true,
 		frameCount,
@@ -75,8 +66,8 @@
 	Utils.onEvent(window,"resize",Utils.debounce(onResize,100));
 
 	// normalize long-touch/drag on canvas
-	Utils.onEvent(window,"contextmenu",disableEvent);
-	Utils.onEvent(document,"selectstart",disableEvent);
+	Utils.onEvent(window,"contextmenu",Interaction.disableEvent);
+	Utils.onEvent(document,"selectstart",Interaction.disableEvent);
 
 
 	// ******************************
@@ -149,24 +140,19 @@
 			);
 	}
 
-	function setupPlayInteraction() {
-		Utils.onEvent(document,"keydown mousedown touchstart pointerdown",onPlayPress);
-		Utils.onEvent(document,"keyup mouseup touchcancel touchend pointercancel pointerup",onPlayRelease);
-	}
-
 	function onPlayPress(evt) {
 		evt.preventDefault();
 
 		if (gameState.playing) {
-			var key = detectKey(evt);
+			var key = Interaction.detectKey(evt);
 			if (
 				evt.type != "keydown" ||
-				key == KEYBOARD_SPACE
+				key == Interaction.KEYBOARD_SPACE
 			) {
 				gameState.engineRunning = true;
 			}
 
-			if (key == KEYBOARD_ESC) {
+			if (key == Interaction.KEYBOARD_ESC) {
 				gameState.playing = false;
 				waitAtRetryScreen();
 			}
@@ -179,107 +165,10 @@
 		if (gameState.playing &&
 			(
 				evt.type != "keydown" ||
-				detectKey(evt) == KEYBOARD_SPACE
+				Interaction.detectKey(evt) == Interaction.KEYBOARD_SPACE
 			)
 		) {
 			gameState.engineRunning = false;
-		}
-	}
-
-	function teardownPlayInteraction() {
-		Utils.offEvent(document,"keydown mousedown touchstart pointerdown",onPlayPress);
-		Utils.offEvent(document,"keyup mouseup touchcancel touchend pointercancel pointerup",onPlayRelease);
-	}
-
-	function disableEvent(evt) {
-		evt.preventDefault();
-		evt.stopPropagation();
-		evt.stopImmediatePropagation();
-	}
-
-	function disableTouch() {
-		if (!touch_disabled) {
-			touch_disabled = true;
-			Utils.onEvent(document,"touchstart touchcancel touchend pointerdown pointercancel pointerend",disableEvent);
-		}
-	}
-
-	function enableTouch() {
-		if (touch_disabled) {
-			touch_disabled = false;
-			Utils.offEvent(document,"touchstart touchcancel touchend pointerdown pointercancel pointerend",disableEvent);
-		}
-	}
-
-	// normalize touch event handling
-	function detectTouch(evt) {
-		if (evt.type == "touchstart" || evt.type == "touchcancel" || evt.type == "touchend") {
-			if (evt.touches && evt.touches.length > 0) {
-				evt.clientX = evt.touches[0].clientX;
-				evt.clientY = evt.touches[0].clientY;
-				evt.screenX = evt.touches[0].screenX;
-				evt.screenY = evt.touches[0].screenY;
-			}
-		}
-		return evt;
-	}
-
-	// normalize keyboard event handling
-	function detectKey(evt) {
-		if (evt.type == "keydown" || evt.type == "keyup" || evt.type == "keypress") {
-			if (
-				evt.key == "Spacebar" ||
-				evt.key == " " ||
-				evt.keyCode == 32 ||
-				evt.charCode == 32
-			) {
-				return KEYBOARD_SPACE;
-			}
-			else if (
-				evt.key == "Enter" ||
-				evt.keyCode == 13 ||
-				evt.charCode == 13
-			) {
-				return KEYBOARD_ENTER;
-			}
-			else if (
-				evt.key == "Esc" ||
-				evt.key == "Escape" ||
-				evt.keyCode == 27 ||
-				evt.charCode == 27
-			) {
-				return KEYBOARD_ESC;
-			}
-			else if (
-				evt.key == "1" ||
-				evt.keyCode == 49 ||
-				evt.charCode == 49
-			) {
-				return KEYBOARD_1;
-			}
-			else if (
-				evt.key == "2" ||
-				evt.keyCode == 50 ||
-				evt.charCode == 50
-			) {
-				return KEYBOARD_2;
-			}
-			else if (
-				evt.key == "3" ||
-				evt.keyCode == 51 ||
-				evt.charCode == 51
-			) {
-				return KEYBOARD_3;
-			}
-		}
-	}
-
-	function detectEscape(evt) {
-		evt.preventDefault();
-
-		if (detectKey(evt) == KEYBOARD_ESC) {
-			gameState.playEntering = false;
-			waitAtRetryScreen();
 		}
 	}
 
@@ -293,7 +182,7 @@
 
 	function waitAtWelcomeScreen() {
 		// stop listening to ESC
-		Utils.offEvent(document,"keydown keypress",detectEscape);
+		Utils.offEvent(document,"keydown keypress",escapeCancelGame);
 
 		var evtNames = "keydown keypress mousedown touchstart pointerstart";
 
@@ -301,7 +190,7 @@
 		resetFramerate();
 
 		// re-enable touch
-		enableTouch();
+		Interaction.enableTouch();
 
 		// show screen
 		drawWelcome();
@@ -326,18 +215,18 @@
 
 			evt.preventDefault();
 
-			if ((key = detectKey(evt))) {
-				if (key == KEYBOARD_1 || key == KEYBOARD_ENTER) {
+			if ((key = Interaction.detectKey(evt))) {
+				if (key == Interaction.KEYBOARD_1 || key == Interaction.KEYBOARD_ENTER) {
 					buttonPressed = 0;
 				}
-				else if (key == KEYBOARD_2) {
+				else if (key == Interaction.KEYBOARD_2) {
 					buttonPressed = 1;
 				}
-				else if (key == KEYBOARD_3) {
+				else if (key == Interaction.KEYBOARD_3) {
 					buttonPressed = 2;
 				}
 			}
-			else if ((evt = detectTouch(evt))) {
+			else if ((evt = Interaction.detectTouch(evt))) {
 				for (var i=0; i<screen.hitAreas.length; i++) {
 					// recognized button press?
 					if (Utils.pointInArea(
@@ -385,7 +274,7 @@
 
 	function waitAtRetryScreen() {
 		// stop listening to ESC
-		Utils.offEvent(document,"keydown keypress",detectEscape);
+		Utils.offEvent(document,"keydown keypress",escapeCancelGame);
 
 		var evtNames = "keydown keypress mousedown touchstart pointerstart";
 
@@ -393,7 +282,7 @@
 		resetFramerate();
 
 		// re-enable touch
-		enableTouch();
+		Interaction.enableTouch();
 
 		// draw screen
 		gameState.darknessRatio = 0;
@@ -419,15 +308,15 @@
 
 			evt.preventDefault();
 
-			if ((key = detectKey(evt))) {
-				if (key == KEYBOARD_1 || key == KEYBOARD_ESC) {
+			if ((key = Interaction.detectKey(evt))) {
+				if (key == Interaction.KEYBOARD_1 || key == Interaction.KEYBOARD_ESC) {
 					buttonPressed = 1;
 				}
-				else if (key == KEYBOARD_2 || key == KEYBOARD_ENTER) {
+				else if (key == Interaction.KEYBOARD_2 || key == Interaction.KEYBOARD_ENTER) {
 					buttonPressed = 2;
 				}
 			}
-			else if ((evt = detectTouch(evt))) {
+			else if ((evt = Interaction.detectTouch(evt))) {
 				// note: hitAreas[0] is the location of the best-score badge
 				for (var i=1; i<screen.hitAreas.length; i++) {
 					// recognized button press?
@@ -652,7 +541,7 @@
 
 	function startWelcomeEntering() {
 		// disable any touch for right now
-		disableTouch();
+		Interaction.disableTouch();
 
 		gameState.playHintShown = false;
 		gameState.retryLeaving = false;
@@ -665,7 +554,7 @@
 
 	function startWelcomeLeaving() {
 		// disable any touch for right now
-		disableTouch();
+		Interaction.disableTouch();
 
 		gameState.welcomeWaiting = false;
 		gameState.welcomeLeaving = true;
@@ -676,10 +565,10 @@
 
 	function startPlayEntering() {
 		// disable any touch for right now
-		disableTouch();
+		Interaction.disableTouch();
 
-		// handle ESC during game intro
-		Utils.onEvent(document,"keydown keypress",detectEscape);
+		// handle ESC during game
+		Utils.onEvent(document,"keydown keypress",escapeCancelGame);
 
 		clearScene();
 
@@ -709,26 +598,26 @@
 	}
 
 	function startPlaying() {
-		enableTouch();
-
-		// handle ESC during game play
-		Utils.offEvent(document,"keydown keypress",detectEscape);
+		Interaction.enableTouch();
 
 		gameState.playHintShown = true;
 		gameState.playEntering = false;
 		gameState.playing = true;
 		Clouds.setCloudScaling(gameState.gameCloudScaling);
 
-		setupPlayInteraction();
+		Interaction.setupPlayInteraction(onPlayPress,onPlayRelease);
 
 		gameState.RAFhook = requestAnimationFrame(runPlaying);
 	}
 
 	function startPlayLeaving() {
-		teardownPlayInteraction();
+		// stop listening to ESC
+		Utils.offEvent(document,"keydown keypress",escapeCancelGame);
+
+		Interaction.teardownPlayInteraction(onPlayPress,onPlayRelease);
 
 		// disable any touch for right now
-		disableTouch();
+		Interaction.disableTouch();
 
 		gameState.playing = false;
 		gameState.playLeaving = true;
@@ -744,7 +633,7 @@
 
 	function startRetryEntering() {
 		// disable any touch for right now
-		disableTouch();
+		Interaction.disableTouch();
 
 		gameState.retryEntering = true;
 		gameState.retryEnteringTickCount = 0;
@@ -756,7 +645,7 @@
 
 	function startRetryLeaving(gotoWelcome) {
 		// disable any touch for right now
-		disableTouch();
+		Interaction.disableTouch();
 
 		gameState.retryWaiting = false;
 		gameState.retryLeaving = true;
@@ -2198,6 +2087,14 @@
 					framerateTimestamp = Date.now();
 				}
 			}
+		}
+	}
+
+	function escapeCancelGame(evt) {
+		if (Interaction.detectKey(evt) == Interaction.KEYBOARD_ESC) {
+			evt.preventDefault();
+			gameState.playEntering = false;
+			waitAtRetryScreen();
 		}
 	}
 
