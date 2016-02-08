@@ -1,7 +1,9 @@
 (function Game(){
 	"use strict";
 
-	var viewportDims = {},
+	var buildNumber = "1.0",
+
+		viewportDims = {},
 
 		sceneCnv,
 		sceneCtx,
@@ -87,7 +89,7 @@
 		if (DEBUG) {
 			sceneCtx.font = "20px sans-serif";
 			sceneCtx.fillStyle = "white";
-			sceneCtx.fillText(framerate,200,20);
+			sceneCtx.fillText("Build: " + buildNumber + "     " + framerate,150,20);
 		}
 	}
 
