@@ -99,16 +99,30 @@ var Utils = (function Utils(){
 	}
 
 	function onEvent(elem,evtNames,handler) {
+		// elem not passed?
+		if (!handler) {
+			handler = evtNames;
+			evtNames = elem;
+			elem = Browser.eventRoot;
+		}
+
 		evtNames = evtNames.split(" ");
 		for (var i=0; i<evtNames.length; i++) {
-			elem.addEventListener(evtNames[i],handler,/*capturing=*/false);
+			Browser.eventRoot.addEventListener(evtNames[i],handler,/*capturing=*/false);
 		}
 	}
 
 	function offEvent(elem,evtNames,handler) {
+		// elem not passed?
+		if (!handler) {
+			handler = evtNames;
+			evtNames = elem;
+			elem = Browser.eventRoot;
+		}
+
 		evtNames = evtNames.split(" ");
 		for (var i=0; i<evtNames.length; i++) {
-			elem.removeEventListener(evtNames[i],handler,/*capturing=*/false);
+			Browser.eventRoot.removeEventListener(evtNames[i],handler,/*capturing=*/false);
 		}
 	}
 

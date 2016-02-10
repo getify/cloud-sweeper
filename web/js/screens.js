@@ -17,7 +17,7 @@ var Screens = (function Screens(){
 				{ x1: 570, y1: 490, x2: 810, y2: 655, },	// hard
 			],
 			scaled: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 				hitAreas: [],
 			},
@@ -32,7 +32,7 @@ var Screens = (function Screens(){
 				{ x1: 465, y1: 450, x2: 785, y2: 580, },	// fly again
 			],
 			scaled: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 				hitAreas: [],
 			},
@@ -48,7 +48,7 @@ var Screens = (function Screens(){
 			width: 150,
 			height: 150,
 			scaled: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 			},
 		},
@@ -57,7 +57,7 @@ var Screens = (function Screens(){
 			width: 50,
 			height: 300,
 			scaled: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 			},
 		},
@@ -70,7 +70,7 @@ var Screens = (function Screens(){
 				y2: 273,
 			},
 			scaled: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 			},
 		},
@@ -79,7 +79,7 @@ var Screens = (function Screens(){
 			width: 50,
 			height: 4,
 			scaled: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 			},
 		},
@@ -88,7 +88,7 @@ var Screens = (function Screens(){
 			width: 655,
 			height: 110,
 			scaled: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 			},
 		},

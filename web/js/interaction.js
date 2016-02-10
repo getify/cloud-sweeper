@@ -27,13 +27,13 @@ var Interaction = (function Interaction(){
 	// ******************************
 
 	function setupPlayInteraction(onPlayPress,onPlayRelease) {
-		Utils.onEvent(document,"keydown mousedown touchstart pointerdown",onPlayPress);
-		Utils.onEvent(document,"keyup mouseup touchcancel touchend pointercancel pointerup",onPlayRelease);
+		Utils.onEvent("keydown mousedown touchstart pointerdown",onPlayPress);
+		Utils.onEvent("keyup mouseup touchcancel touchend pointercancel pointerup",onPlayRelease);
 	}
 
 	function teardownPlayInteraction(onPlayPress,onPlayRelease) {
-		Utils.offEvent(document,"keydown mousedown touchstart pointerdown",onPlayPress);
-		Utils.offEvent(document,"keyup mouseup touchcancel touchend pointercancel pointerup",onPlayRelease);
+		Utils.offEvent("keydown mousedown touchstart pointerdown",onPlayPress);
+		Utils.offEvent("keyup mouseup touchcancel touchend pointercancel pointerup",onPlayRelease);
 	}
 
 	function disableEvent(evt) {
@@ -45,14 +45,14 @@ var Interaction = (function Interaction(){
 	function disableTouch() {
 		if (!touchDisabled) {
 			touchDisabled = true;
-			Utils.onEvent(document,"touchstart touchcancel touchend pointerdown pointercancel pointerend",disableEvent);
+			Utils.onEvent("touchstart touchcancel touchend pointerdown pointercancel pointerend",disableEvent);
 		}
 	}
 
 	function enableTouch() {
 		if (touchDisabled) {
 			touchDisabled = false;
-			Utils.offEvent(document,"touchstart touchcancel touchend pointerdown pointercancel pointerend",disableEvent);
+			Utils.offEvent("touchstart touchcancel touchend pointerdown pointercancel pointerend",disableEvent);
 		}
 	}
 

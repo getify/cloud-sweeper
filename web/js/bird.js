@@ -5,7 +5,7 @@ var Bird = (function Bird(){
 		dirty = false,
 		tickCount = -1,
 		frameIdx = 0,
-		cnv = document.createElement("canvas"),
+		cnv = Browser.createCanvas(),
 		ctx,
 		frames,
 		scaledFrames = [],
@@ -82,7 +82,7 @@ var Bird = (function Bird(){
 
 		if (birdWidth !== scaledBird.birdWidth) {
 			if (!scaledBird.cnv) {
-				scaledBird.cnv = document.createElement("canvas");
+				scaledBird.cnv = Browser.createCanvas();
 				scaledBird.ctx = scaledBird.cnv.getContext("2d");
 			}
 			scaledBird.birdWidth = birdWidth;

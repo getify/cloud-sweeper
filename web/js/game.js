@@ -1,31 +1,13 @@
 (function Game(){
 	"use strict";
 
-	var BUILD_NUMBER = "1.0.1",
-
-		viewportDims = {},
+	var BUILD_NUMBER = "1.0.2",
 
 		sceneCnv,
 		sceneCtx,
 
-		tmpCnv = document.createElement("canvas"),
+		tmpCnv = Browser.createCanvas(),
 		tmpCtx = tmpCnv.getContext("2d"),
-
-		orientationLocked = false,
-		lockOrientation =
-			(window.screen.lockOrientation ?
-				window.screen.lockOrientation.bind(window.screen) : null
-			) ||
-			(window.screen.mozLockOrientation ?
-				window.screen.mozLockOrientation.bind(window.screen) : null
-			) ||
-			(window.screen.msLockOrientation ?
-				window.screen.msLockOrientation.bind(window.screen) : null
-			) ||
-			((window.screen.orientation && window.screen.orientation.lock) ?
-				window.screen.orientation.lock.bind(window.screen.orientation) : null
-			) ||
-			null,
 
 		GAME_EASY = 0,
 		GAME_MEDIUM = 1,
@@ -44,30 +26,24 @@
 		framerate,
 		framerateTimestamp;
 
+	Browser.setupEvents(onViewportSize);
 
 	resetFramerate();
 
 	// initialize UI
 	Promise.all([
-		docready(),
+		waitForDocument(),
 		loadResources(),
-		checkOrientation(),
+		Browser.checkOrientation(),
 	])
 	.catch(function(err){
 		console.log(err);
 	})
 	.then(snapToViewport)
 	.then(initGame)
-	.then(onResize)
+	.then(onViewportSize)
 	.then(startWelcomeEntering);
 
-
-	// respond to window resizes/reorientation
-	Utils.onEvent(window,"resize",Utils.debounce(onResize,100));
-
-	// normalize long-touch/drag on canvas
-	Utils.onEvent(window,"contextmenu",Interaction.disableEvent);
-	Utils.onEvent(document,"selectstart",Interaction.disableEvent);
 
 
 	// ******************************
@@ -75,7 +51,7 @@
 	// clear canvas
 	function clearScene() {
 		sceneCtx.fillStyle = "#BAE6F5";
-		sceneCtx.fillRect(-20,-20,viewportDims.width+40,viewportDims.height+40);
+		sceneCtx.fillRect(-20,-20,Browser.viewportDims.width+40,Browser.viewportDims.height+40);
 	}
 
 	function showFramerate() {
@@ -96,19 +72,19 @@
 		}
 	}
 
-	function docready() {
+	function waitForDocument() {
 		return new Promise(function executor(resolve){
-			if (!document.ready) {
-				Utils.onEvent(document,"DOMContentLoaded",onReady);
+			if (!Browser.DOMReady) {
+				Browser.onDOMReady(onDocument);
 			}
 			else {
-				onReady();
+				onDocument();
 			}
 
 			// ******************************
 
-			function onReady() {
-				sceneCnv = document.querySelectorAll("[rel~=js-scene]")[0];
+			function onDocument() {
+				sceneCnv = Browser.getElement("[rel~=js-scene]");
 				sceneCtx = sceneCnv.getContext("2d");
 				resolve();
 			}
@@ -124,20 +100,6 @@
 			Screens.load(),
 			PlayHint.load(),
 		]);
-	}
-
-	function checkOrientation() {
-		return Promise.resolve(
-				lockOrientation ?
-					lockOrientation("landscape") :
-					Promise.reject()
-			)
-			.then(
-				function onLocked() {
-					orientationLocked = true;
-				},
-				function onNotLocked() {}
-			);
 	}
 
 	function onPlayPress(evt) {
@@ -182,7 +144,7 @@
 
 	function waitAtWelcomeScreen() {
 		// stop listening to ESC
-		Utils.offEvent(document,"keydown keypress",escapeCancelGame);
+		Utils.offEvent("keydown keypress",escapeCancelGame);
 
 		var evtNames = "keydown keypress mousedown touchstart pointerstart";
 
@@ -203,7 +165,7 @@
 			gameState.welcomeWaiting = true;
 
 			var screen = Screens.getWelcomeScreen();
-			Utils.onEvent(document,evtNames,onInteraction);
+			Utils.onEvent(evtNames,onInteraction);
 		}
 
 
@@ -242,7 +204,7 @@
 
 			// respond to button press?
 			if (buttonPressed != null) {
-				Utils.offEvent(document,evtNames,onInteraction);
+				Utils.offEvent(evtNames,onInteraction);
 				if (buttonPressed === 0) {
 					gameState.difficulty = GAME_EASY;
 				}
@@ -274,7 +236,7 @@
 
 	function waitAtRetryScreen() {
 		// stop listening to ESC
-		Utils.offEvent(document,"keydown keypress",escapeCancelGame);
+		Utils.offEvent("keydown keypress",escapeCancelGame);
 
 		var evtNames = "keydown keypress mousedown touchstart pointerstart";
 
@@ -296,7 +258,7 @@
 			gameState.retryWaiting = true;
 
 			var screen = Screens.getRetryScreen();
-			Utils.onEvent(document,evtNames,onInteraction);
+			Utils.onEvent(evtNames,onInteraction);
 		}
 
 
@@ -333,7 +295,7 @@
 
 			// respond to button press?
 			if (buttonPressed != null) {
-				Utils.offEvent(document,evtNames,onInteraction);
+				Utils.offEvent(evtNames,onInteraction);
 				if (buttonPressed === 1) {
 					startRetryLeaving(/*gotoWelcome=*/true);
 				}
@@ -568,7 +530,7 @@
 		Interaction.disableTouch();
 
 		// handle ESC during game
-		Utils.onEvent(document,"keydown keypress",escapeCancelGame);
+		Utils.onEvent("keydown keypress",escapeCancelGame);
 
 		clearScene();
 
@@ -612,7 +574,7 @@
 
 	function startPlayLeaving() {
 		// stop listening to ESC
-		Utils.offEvent(document,"keydown keypress",escapeCancelGame);
+		Utils.offEvent("keydown keypress",escapeCancelGame);
 
 		Interaction.teardownPlayInteraction(onPlayPress,onPlayRelease);
 
@@ -906,7 +868,7 @@
 			drawGameScene();
 
 			// plane still dropping off screen?
-			if (altitudeToViewport(gameState.altitude) < viewportDims.height) {
+			if (altitudeToViewport(gameState.altitude) < Browser.viewportDims.height) {
 				gameState.RAFhook = requestAnimationFrame(runPlayLeaving);
 			}
 			// start retry entry sequence
@@ -1002,7 +964,7 @@
 
 			if (gameState.retryLeavingTickCount <= gameState.retryLeavingTickThreshold) {
 				var y = Math.floor(
-					-viewportDims.height *
+					-Browser.viewportDims.height *
 					(gameState.retryLeavingTickCount/gameState.retryLeavingTickThreshold)
 				);
 
@@ -1027,14 +989,14 @@
 		clearScene();
 
 		var screen = Screens.getWelcomeScreen();
-		screen.x = (viewportDims.width-screen.cnv.width) / 2;
-		screen.y = (viewportDims.height-screen.cnv.height) / 2;
+		screen.x = (Browser.viewportDims.width-screen.cnv.width) / 2;
+		screen.y = (Browser.viewportDims.height-screen.cnv.height) / 2;
 
 		sceneCtx.globalAlpha = opacity;
 
 		if (ratio != 1) {
 			sceneCtx.save();
-			Utils.scaleCanvas(sceneCtx,viewportDims.width/2,viewportDims.height/2,ratio,ratio);
+			Utils.scaleCanvas(sceneCtx,Browser.viewportDims.width/2,Browser.viewportDims.height/2,ratio,ratio);
 		}
 
 		sceneCtx.drawImage(screen.cnv,screen.x,screen.y);
@@ -1083,7 +1045,7 @@
 
 		if (countdown) {
 			var numChar = Text.getCachedCharacter("countdown:" + countdown);
-			var x = ((viewportDims.width - numChar.cnv.width) / 2);
+			var x = ((Browser.viewportDims.width - numChar.cnv.width) / 2);
 			var y = 25;
 
 			sceneCtx.drawImage(numChar.cnv,x,y,numChar.cnv.width,numChar.cnv.height);
@@ -1169,7 +1131,7 @@
 			var curAlpha = sceneCtx.globalAlpha;
 			sceneCtx.globalAlpha = (0.6 - (0.6 * gameState.sunRatio)) * gameState.darknessRatio * drawOpacity;
 			sceneCtx.fillStyle = "black";
-			sceneCtx.fillRect(0-overflow,0-overflow,viewportDims.width+(2*overflow),viewportDims.height+(2*overflow));
+			sceneCtx.fillRect(0-overflow,0-overflow,Browser.viewportDims.width+(2*overflow),Browser.viewportDims.height+(2*overflow));
 			sceneCtx.globalAlpha = curAlpha;
 		}
 	}
@@ -1257,7 +1219,7 @@
 		}
 
 		if (fallingPosition != null) {
-			var height = viewportDims.height;
+			var height = Browser.viewportDims.height;
 			if (gameState.foregroundCloud.length > 0) {
 				height = Math.max(height,gameState.foregroundCloud[0].y+gameState.foregroundCloud[0].cnv.height);
 			}
@@ -1304,11 +1266,11 @@
 
 		// draw retry screen
 		var screen = Screens.getRetryScreen();
-		var startY = viewportDims.height;
-		var endY = (viewportDims.height - screen.height) / 2;
+		var startY = Browser.viewportDims.height;
+		var endY = (Browser.viewportDims.height - screen.height) / 2;
 
 		if (screenPosition != null) {
-			screen.x = (viewportDims.width - screen.width) / 2;
+			screen.x = (Browser.viewportDims.width - screen.width) / 2;
 			screen.y = startY + (screenPosition * (endY - startY));
 			sceneCtx.drawImage(screen.cnv,screen.x,screen.y,screen.width,screen.height);
 
@@ -1564,50 +1526,49 @@
 	}
 
 	function snapToViewport() {
-		viewportDims.width = window.innerWidth;
-		viewportDims.height = window.innerHeight;
+		Browser.updateViewportDims();
 
-		if (!orientationLocked) {
+		if (!Browser.orientationLocked) {
 			var minRatio = 0.5;
 			var maxRatio = 0.75;
-			var ratio = viewportDims.height / viewportDims.width;
+			var ratio = Browser.viewportDims.height / Browser.viewportDims.width;
 
 			if (ratio > maxRatio) {
-				viewportDims.height = Math.floor(viewportDims.width * maxRatio);
+				Browser.viewportDims.height = Math.floor(Browser.viewportDims.width * maxRatio);
 			}
 			else if (ratio < minRatio) {
-				viewportDims.width = Math.floor(viewportDims.height / minRatio);
+				Browser.viewportDims.width = Math.floor(Browser.viewportDims.height / minRatio);
 			}
 
-			scene.style.width = viewportDims.width + "px";
-			scene.style.height = viewportDims.height + "px;";
+			scene.style.width = Browser.viewportDims.width + "px";
+			scene.style.height = Browser.viewportDims.height + "px;";
 		}
 
-		if (sceneCnv.width !== viewportDims.width || sceneCnv.height !== viewportDims.height) {
-			sceneCnv.width = viewportDims.width;
-			sceneCnv.height = viewportDims.height;
+		if (sceneCnv.width !== Browser.viewportDims.width || sceneCnv.height !== Browser.viewportDims.height) {
+			sceneCnv.width = Browser.viewportDims.width;
+			sceneCnv.height = Browser.viewportDims.height;
 		}
 	}
 
-	function onResize() {
+	function onViewportSize() {
 		snapToViewport();
 
 		// recalc some metrics
-		gameState.speedRatio = viewportDims.width / 1200;
-		gameState.planeSize = Math.floor(viewportDims.height / 3);
+		gameState.speedRatio = Browser.viewportDims.width / 1200;
+		gameState.planeSize = Math.floor(Browser.viewportDims.height / 3);
 		gameState.planeXThreshold = Math.round(gameState.planeSize / 1.8);
 
 		// scale stuff
 		Screens.scaleTo(
-			Math.floor(viewportDims.width * 0.95),
-			Math.floor(viewportDims.height * 0.95)
+			Math.floor(Browser.viewportDims.width * 0.95),
+			Math.floor(Browser.viewportDims.height * 0.95)
 		);
 
 		Plane.scaleTo(gameState.planeSize);
 
 		var planeHeight = Plane.getScaledHeight();
-		viewportDims.playHeight = viewportDims.height - (planeHeight / 2);
-		viewportDims.playHeightRatio = viewportDims.playHeight / gameState.maxAltitude;
+		Browser.viewportDims.playHeight = Browser.viewportDims.height - (planeHeight / 2);
+		Browser.viewportDims.playHeightRatio = Browser.viewportDims.playHeight / gameState.maxAltitude;
 
 		Bird.scaleTo(Math.floor(gameState.planeSize / 3.5));
 
@@ -1622,7 +1583,7 @@
 		var sunMeter = Screens.getElement("sunMeter");
 		var sunMeterBar = Screens.getElement("sunMeterBar");
 		var sunMeterBarTop = Screens.getElement("sunMeterBarTop");
-		sunMeter.scaled.height = Math.ceil((viewportDims.height - scoreboard.scaled.size - scoreboard.y) * 0.7);
+		sunMeter.scaled.height = Math.ceil((Browser.viewportDims.height - scoreboard.scaled.size - scoreboard.y) * 0.7);
 		sunMeter.scaled.width = Math.ceil(sunMeter.width * (sunMeter.scaled.height / sunMeter.height));
 		sunMeter.scaled.cnv.width = sunMeterBar.scaled.cnv.width = sunMeter.scaled.width;
 		sunMeter.scaled.cnv.height = sunMeterBar.scaled.cnv.height = sunMeter.scaled.height;
@@ -1639,7 +1600,7 @@
 		gameOver.scaled.height = (gameOver.scaled.width / gameOver.width) * gameOver.height;
 		gameOver.scaled.cnv.width = gameOver.scaled.width;
 		gameOver.scaled.cnv.height = gameOver.scaled.height;
-		gameOver.x = (viewportDims.width - gameOver.scaled.width) / 2;
+		gameOver.x = (Browser.viewportDims.width - gameOver.scaled.width) / 2;
 		gameOver.scaled.ctx.drawImage(gameOver.img,0,0,gameOver.scaled.width,gameOver.scaled.height);
 
 		// scale and cache all countdown digits, if needed
@@ -1686,8 +1647,8 @@
 		var planeHeight = Plane.getScaledHeight();
 
 		return Math.floor(
-			viewportDims.playHeight -
-			(altd * viewportDims.playHeightRatio) -
+			Browser.viewportDims.playHeight -
+			(altd * Browser.viewportDims.playHeightRatio) -
 			(planeHeight / 4)
 		);
 	}
@@ -1777,10 +1738,10 @@
 		do {
 			var overlapping = false;
 			if (origCx == null) {
-				cx = Utils.getRandomInRange(-20,viewportDims.width-20);
+				cx = Utils.getRandomInRange(-20,Browser.viewportDims.width-20);
 			}
 			if (origCy == null) {
-				cy = Utils.getRandomInRange(-30,viewportDims.height-30);
+				cy = Utils.getRandomInRange(-30,Browser.viewportDims.height-30);
 			}
 			for (var j=0; j<gameState.backgroundClouds.length; j++) {
 				var tc = gameState.backgroundClouds[j];
@@ -1807,7 +1768,7 @@
 			var elem = elemList[i];
 			if (!Utils.rectangleCollision(
 				elem.x, elem.y, elem.x + elem.cnv.width - 1, elem.y + elem.cnv.height - 1,
-				0, 0, viewportDims.width - 1, viewportDims.height - 1
+				0, 0, Browser.viewportDims.width - 1, Browser.viewportDims.height - 1
 			)) {
 				if (elemCloud) {
 					if (elem.target && !elem.hit) {
@@ -1859,7 +1820,7 @@
 
 			// find a non-overlapping position for the new cloud
 			// (to look nicer at start)
-			positionBackgroundCloud(cloud,viewportDims.width-2);
+			positionBackgroundCloud(cloud,Browser.viewportDims.width-2);
 
 			// save the new cloud (and position)
 			gameState.backgroundClouds.push(cloud);
@@ -1895,7 +1856,7 @@
 				else {
 					// handle target on cloud
 					if (gameState.difficulty == GAME_EASY ||
-						(gameState.gameClouds[i].x <= (viewportDims.width / 2))
+						(gameState.gameClouds[i].x <= (Browser.viewportDims.width / 2))
 					) {
 						gameState.gameClouds[i].target.scale = gameState.gameClouds[i].target.scale || 1;
 						gameState.gameClouds[i].target.scaleDelta = gameState.gameClouds[i].target.scaleDelta || 0.008;
@@ -1924,8 +1885,8 @@
 			var cloudHeightThird = Math.floor(cloudHeight / 3);
 
 			// position cloud
-			cloud.x = viewportDims.width - 2;
-			cloud.y = Utils.getRandomInRange(-cloudHeightThird,viewportDims.height-cloudHeight+cloudHeightThird);
+			cloud.x = Browser.viewportDims.width - 2;
+			cloud.y = Utils.getRandomInRange(-cloudHeightThird,Browser.viewportDims.height-cloudHeight+cloudHeightThird);
 
 			// save the new cloud (and position)
 			gameState.gameClouds.push(cloud);
@@ -1956,12 +1917,12 @@
 				var cloudHeight = cloud.cnv.height;
 				var cloudHeightHalf = Math.floor(cloudHeight / 2);
 
-				cloud.x = viewportDims.width - 2;
+				cloud.x = Browser.viewportDims.width - 2;
 				if (Utils.getRandomInRange(0,6) < 5) {
 					cloud.y = -cloudHeightHalf;
 				}
 				else {
-					cloud.y = viewportDims.height - cloudHeightHalf;
+					cloud.y = Browser.viewportDims.height - cloudHeightHalf;
 				}
 
 				// save the new cloud (and position)
@@ -2009,10 +1970,10 @@
 			var birdHeight = bird.cnv.height;
 
 			// position bird
-			bird.x = viewportDims.width - 2;
+			bird.x = Browser.viewportDims.width - 2;
 			bird.y = Utils.getRandomInRange(
 				birdHeight,
-				viewportDims.height - (2 * birdHeight)
+				Browser.viewportDims.height - (2 * birdHeight)
 			);
 
 			// setup bird

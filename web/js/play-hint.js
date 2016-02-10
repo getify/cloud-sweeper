@@ -5,7 +5,7 @@ var PlayHint = (function PlayHint(){
 		dirty = false,
 		tickCount = -1,
 		frameIdx = 0,
-		cnv = document.createElement("canvas"),
+		cnv = Browser.createCanvas(),
 		ctx,
 		frames,
 		text,
@@ -78,7 +78,7 @@ var PlayHint = (function PlayHint(){
 
 		if (hintWidth !== scaledHint.hintWidth) {
 			if (!scaledHint.cnv) {
-				scaledHint.cnv = document.createElement("canvas");
+				scaledHint.cnv = Browser.createCanvas();
 				scaledHint.ctx = scaledHint.cnv.getContext("2d");
 			}
 			scaledHint.hintWidth = hintWidth;

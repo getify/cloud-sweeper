@@ -93,7 +93,7 @@ var Text = (function Text(){
 	function cacheCharacter(cacheID) {
 		if (!cache[cacheID]) {
 			cache[cacheID] = {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 			};
 			cache[cacheID].ctx = cache[cacheID].cnv.getContext("2d");

@@ -3,7 +3,7 @@ var Plane = (function Plane(){
 
 	var parts = {},
 		publicAPI,
-		cnv = document.createElement("canvas"),
+		cnv = Browser.createCanvas(),
 		ctx,
 		dirty = false,
 		degrees = 0,

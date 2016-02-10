@@ -167,11 +167,11 @@ var Clouds = (function Clouds(){
 
 	function generateGameCloudObj() {
 		var obj = {
-			cnv: document.createElement("canvas"),
+			cnv: Browser.createCanvas(),
 			ctx: null,
 			hitAreas: [ { x1: null, y1: null, x2: null, y2: null, }, ],
 			target: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 				x: null,
 				y: null,
@@ -179,7 +179,7 @@ var Clouds = (function Clouds(){
 				scaleDelta: null,
 			},
 			exploding: {
-				cnv: document.createElement("canvas"),
+				cnv: Browser.createCanvas(),
 				ctx: null,
 			},
 			x: null,
@@ -199,7 +199,7 @@ var Clouds = (function Clouds(){
 
 	function generateOtherCloudObj() {
 		var obj = {
-			cnv: document.createElement("canvas"),
+			cnv: Browser.createCanvas(),
 			ctx: null,
 			x: null,
 			y: null,

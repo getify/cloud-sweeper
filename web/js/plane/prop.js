@@ -1,4 +1,4 @@
-(function PlanePropeller(global){
+(function PlanePropeller(){
 	"use strict";
 
 	var part,
@@ -34,7 +34,7 @@
 			originY: 0,
 			offsetX: 0,
 			offsetY: 0,
-			cnv: document.createElement("canvas"),
+			cnv: Browser.createCanvas(),
 			ctx: null,
 			cache: []
 		};
@@ -62,7 +62,7 @@
 		cacheItem = (scaled.cache[cacheIdx] = scaled.cache[cacheIdx] || {});
 
 		if (!cacheItem.cnv) {
-			cacheItem.cnv = document.createElement("canvas");
+			cacheItem.cnv = Browser.createCanvas();
 			cacheItem.ctx = cacheItem.cnv.getContext("2d");
 			cacheItem.dirty = true;
 			cacheItem.offsetX = scaled.offsetX;
@@ -105,4 +105,4 @@
 		frameIdx = Math.floor(tickCount / ratio);
 	}
 
-})(window);
+})();
