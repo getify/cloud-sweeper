@@ -1,7 +1,7 @@
 (function Game(){
 	"use strict";
 
-	var BUILD_NUMBER = "1.0.3",
+	var BUILD_NUMBER = "1.0.4",
 
 		sceneCnv,
 		sceneCtx,
@@ -246,7 +246,8 @@
 		// re-enable touch
 		Interaction.enableTouch();
 
-		// draw screen
+		// draw retry screen
+		manageBestCloudScore();
 		gameState.darknessRatio = 0;
 		drawRetry(null,1,1);
 
@@ -1305,7 +1306,7 @@
 
 			// display best-score text one character at a time
 			for (var i=0; i<bestScoreDigits.length; i++) {
-				var scoreDigit = String(gameState.cloudScore).charAt(i);
+				var scoreDigit = String(gameState.bestCloudScore[gameState.difficulty]).charAt(i);
 				var digitWidth = Math.ceil(bestScoreDigits[i].width * ratio);
 				var scaledCachedDigit = Text.getCachedCharacter("bestscore:" + scoreDigit);
 
