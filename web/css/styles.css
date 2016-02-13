@@ -25,6 +25,10 @@ html, body {
 	background-color: #BAE6F5;
 }
 
+body {
+	touch-action: manipulation;
+}
+
 #scene {
 	position: fixed;
 	left: 0px;

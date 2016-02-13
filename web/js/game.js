@@ -1,7 +1,7 @@
 (function Game(){
 	"use strict";
 
-	var BUILD_NUMBER = "1.0.2",
+	var BUILD_NUMBER = "1.0.3",
 
 		sceneCnv,
 		sceneCtx,
