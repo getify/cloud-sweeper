@@ -1,7 +1,6 @@
 var Interaction = (function Interaction(){
 
 	var publicAPI,
-
 		touchDisabled = false;
 
 	publicAPI = {
@@ -10,7 +9,7 @@ var Interaction = (function Interaction(){
 		disableEvent: disableEvent,
 		disableTouch: disableTouch,
 		enableTouch: enableTouch,
-		detectTouch: detectTouch,
+		fixTouchCoords: fixTouchCoords,
 		detectKey: detectKey,
 
 		KEYBOARD_SPACE: 1,
@@ -19,6 +18,10 @@ var Interaction = (function Interaction(){
 		KEYBOARD_1: 4,
 		KEYBOARD_2: 5,
 		KEYBOARD_3: 6,
+
+		EVENT_KEY_DOWN: "keydown",
+		EVENT_KEY: "keydown keypress",
+		EVENT_PRESS: "keydown keypress mousedown touchstart pointerstart"
 	};
 
 	return publicAPI;
@@ -57,7 +60,7 @@ var Interaction = (function Interaction(){
 	}
 
 	// normalize touch event handling
-	function detectTouch(evt) {
+	function fixTouchCoords(evt) {
 		if (evt.type == "touchstart" || evt.type == "touchcancel" || evt.type == "touchend") {
 			if (evt.touches && evt.touches.length > 0) {
 				evt.clientX = evt.touches[0].clientX;

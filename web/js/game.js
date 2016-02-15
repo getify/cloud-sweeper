@@ -1,7 +1,7 @@
 (function Game(){
 	"use strict";
 
-	var BUILD_NUMBER = "1.0.4",
+	var BUILD_NUMBER = "1.0.5",
 
 		sceneCnv,
 		sceneCtx,
@@ -108,7 +108,7 @@
 		if (gameState.playing) {
 			var key = Interaction.detectKey(evt);
 			if (
-				evt.type != "keydown" ||
+				evt.type != Interaction.EVENT_KEY_DOWN ||
 				key == Interaction.KEYBOARD_SPACE
 			) {
 				gameState.engineRunning = true;
@@ -126,7 +126,7 @@
 
 		if (gameState.playing &&
 			(
-				evt.type != "keydown" ||
+				evt.type != Interaction.EVENT_KEY_DOWN ||
 				Interaction.detectKey(evt) == Interaction.KEYBOARD_SPACE
 			)
 		) {
@@ -144,9 +144,7 @@
 
 	function waitAtWelcomeScreen() {
 		// stop listening to ESC
-		Utils.offEvent("keydown keypress",escapeCancelGame);
-
-		var evtNames = "keydown keypress mousedown touchstart pointerstart";
+		Utils.offEvent(Interaction.EVENT_KEY,escapeCancelGame);
 
 		framerateTimestamp = frameCount = null;
 		resetFramerate();
@@ -165,7 +163,7 @@
 			gameState.welcomeWaiting = true;
 
 			var screen = Screens.getWelcomeScreen();
-			Utils.onEvent(evtNames,onInteraction);
+			Utils.onEvent(Interaction.EVENT_PRESS,onInteraction);
 		}
 
 
@@ -188,7 +186,7 @@
 					buttonPressed = 2;
 				}
 			}
-			else if ((evt = Interaction.detectTouch(evt))) {
+			else if ((evt = Interaction.fixTouchCoords(evt))) {
 				for (var i=0; i<screen.hitAreas.length; i++) {
 					// recognized button press?
 					if (Utils.pointInArea(
@@ -204,7 +202,7 @@
 
 			// respond to button press?
 			if (buttonPressed != null) {
-				Utils.offEvent(evtNames,onInteraction);
+				Utils.offEvent(Interaction.EVENT_PRESS,onInteraction);
 				if (buttonPressed === 0) {
 					gameState.difficulty = GAME_EASY;
 				}
@@ -236,9 +234,7 @@
 
 	function waitAtRetryScreen() {
 		// stop listening to ESC
-		Utils.offEvent("keydown keypress",escapeCancelGame);
-
-		var evtNames = "keydown keypress mousedown touchstart pointerstart";
+		Utils.offEvent(Interaction.EVENT_KEY,escapeCancelGame);
 
 		framerateTimestamp = frameCount = null;
 		resetFramerate();
@@ -259,7 +255,7 @@
 			gameState.retryWaiting = true;
 
 			var screen = Screens.getRetryScreen();
-			Utils.onEvent(evtNames,onInteraction);
+			Utils.onEvent(Interaction.EVENT_PRESS,onInteraction);
 		}
 
 
@@ -279,7 +275,7 @@
 					buttonPressed = 2;
 				}
 			}
-			else if ((evt = Interaction.detectTouch(evt))) {
+			else if ((evt = Interaction.fixTouchCoords(evt))) {
 				// note: hitAreas[0] is the location of the best-score badge
 				for (var i=1; i<screen.hitAreas.length; i++) {
 					// recognized button press?
@@ -296,7 +292,7 @@
 
 			// respond to button press?
 			if (buttonPressed != null) {
-				Utils.offEvent(evtNames,onInteraction);
+				Utils.offEvent(Interaction.EVENT_PRESS,onInteraction);
 				if (buttonPressed === 1) {
 					startRetryLeaving(/*gotoWelcome=*/true);
 				}
@@ -531,7 +527,7 @@
 		Interaction.disableTouch();
 
 		// handle ESC during game
-		Utils.onEvent("keydown keypress",escapeCancelGame);
+		Utils.onEvent(Interaction.EVENT_KEY,escapeCancelGame);
 
 		clearScene();
 
@@ -575,7 +571,7 @@
 
 	function startPlayLeaving() {
 		// stop listening to ESC
-		Utils.offEvent("keydown keypress",escapeCancelGame);
+		Utils.offEvent(Interaction.EVENT_KEY,escapeCancelGame);
 
 		Interaction.teardownPlayInteraction(onPlayPress,onPlayRelease);
 
