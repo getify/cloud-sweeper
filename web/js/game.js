@@ -1,9 +1,10 @@
 (function Game(){
 	"use strict";
 
-	var BUILD_NUMBER = "1.0.5",
+	Debug.ON = true;
+	Debug.BUILD_VERSION = "1.0.6";
 
-		sceneCnv,
+	var sceneCnv,
 		sceneCtx,
 
 		tmpCnv = Browser.createCanvas(),
@@ -17,18 +18,15 @@
 		GAME_CLOUD = 1,
 		FOREGROUND_CLOUD = 2,
 
-		gameState = {
-			difficulty: GAME_EASY,
-		},
+		gameState;
 
-		DEBUG = true,
-		frameCount,
-		framerate,
-		framerateTimestamp;
+	gameState = {
+		difficulty: GAME_EASY,
+	};
 
 	Browser.setupEvents(onViewportSize);
 
-	resetFramerate();
+	Debug.resetFramerate();
 
 	// initialize UI
 	Promise.all([
@@ -52,24 +50,6 @@
 	function clearScene() {
 		sceneCtx.fillStyle = "#BAE6F5";
 		sceneCtx.fillRect(-20,-20,Browser.viewportDims.width+40,Browser.viewportDims.height+40);
-	}
-
-	function showFramerate() {
-		sceneCtx.fillText(framerate + " fps",275,20);
-	}
-
-	function showBuild() {
-		sceneCtx.fillText("Build: " + BUILD_NUMBER,150,20);
-	}
-
-	function showDebugInfo() {
-		if (DEBUG) {
-			sceneCtx.font = "20px sans-serif";
-			sceneCtx.fillStyle = "white";
-
-			showFramerate();
-			showBuild();
-		}
 	}
 
 	function waitForDocument() {
@@ -144,10 +124,9 @@
 
 	function waitAtWelcomeScreen() {
 		// stop listening to ESC
-		Utils.offEvent(Interaction.EVENT_KEY,escapeCancelGame);
+		Utils.offEvent(Interaction.EVENT_KEY,cancelGame);
 
-		framerateTimestamp = frameCount = null;
-		resetFramerate();
+		Debug.resetFramerate();
 
 		// re-enable touch
 		Interaction.enableTouch();
@@ -234,10 +213,9 @@
 
 	function waitAtRetryScreen() {
 		// stop listening to ESC
-		Utils.offEvent(Interaction.EVENT_KEY,escapeCancelGame);
+		Utils.offEvent(Interaction.EVENT_KEY,cancelGame);
 
-		framerateTimestamp = frameCount = null;
-		resetFramerate();
+		Debug.resetFramerate();
 
 		// re-enable touch
 		Interaction.enableTouch();
@@ -527,7 +505,7 @@
 		Interaction.disableTouch();
 
 		// handle ESC during game
-		Utils.onEvent(Interaction.EVENT_KEY,escapeCancelGame);
+		Utils.onEvent(Interaction.EVENT_KEY,cancelGame);
 
 		clearScene();
 
@@ -571,7 +549,7 @@
 
 	function startPlayLeaving() {
 		// stop listening to ESC
-		Utils.offEvent(Interaction.EVENT_KEY,escapeCancelGame);
+		Utils.offEvent(Interaction.EVENT_KEY,cancelGame);
 
 		Interaction.teardownPlayInteraction(onPlayPress,onPlayRelease);
 
@@ -617,7 +595,7 @@
 	}
 
 	function runWelcomeEntering() {
-		trackFramerate();
+		Debug.trackFramerate();
 
 		gameState.RAFhook = null;
 
@@ -663,7 +641,7 @@
 	}
 
 	function runWelcomeLeaving() {
-		trackFramerate();
+		Debug.trackFramerate();
 
 		gameState.RAFhook = null;
 
@@ -709,7 +687,7 @@
 	}
 
 	function runPlayEntering() {
-		trackFramerate();
+		Debug.trackFramerate();
 
 		gameState.RAFhook = null;
 
@@ -800,7 +778,7 @@
 	}
 
 	function runPlaying() {
-		trackFramerate();
+		Debug.trackFramerate();
 
 		gameState.RAFhook = null;
 
@@ -840,7 +818,7 @@
 	}
 
 	function runPlayLeaving() {
-		trackFramerate();
+		Debug.trackFramerate();
 
 		gameState.RAFhook = null;
 
@@ -876,7 +854,7 @@
 	}
 
 	function runRetryEntering() {
-		trackFramerate();
+		Debug.trackFramerate();
 
 		gameState.RAFhook = null;
 
@@ -952,7 +930,7 @@
 	}
 
 	function runRetryLeaving() {
-		trackFramerate();
+		Debug.trackFramerate();
 
 		gameState.RAFhook = null;
 
@@ -1004,7 +982,7 @@
 
 		sceneCtx.globalAlpha = 1;
 
-		showDebugInfo();
+		Debug.showInfo(sceneCtx);
 	}
 
 	function drawIntro(drawOpacity,countdown,hintOpacity,showSunMeter) {
@@ -1048,7 +1026,7 @@
 			sceneCtx.drawImage(numChar.cnv,x,y,numChar.cnv.width,numChar.cnv.height);
 		}
 
-		showDebugInfo();
+		Debug.showInfo(sceneCtx);
 	}
 
 	function drawGameScene() {
@@ -1118,7 +1096,7 @@
 			sceneCtx.restore();
 		}
 
-		showDebugInfo();
+		Debug.showInfo(sceneCtx);
 	}
 
 	function darkenScene(drawOpacity) {
@@ -1334,7 +1312,7 @@
 			sceneCtx.restore();
 		}
 
-		showDebugInfo();
+		Debug.showInfo(sceneCtx);
 	}
 
 	function cacheScaledDigits(textType,cacheIDPrefix,scaleRatio,digitHeight) {
@@ -2024,31 +2002,7 @@
 		}
 	}
 
-	function resetFramerate() {
-		framerate = "--";
-	}
-
-	function trackFramerate() {
-		if (DEBUG) {
-			if (framerateTimestamp == null) {
-				framerateTimestamp = Date.now();
-				frameCount = 0;
-			}
-			else {
-				frameCount++;
-
-				var now = Date.now();
-				if ((now - framerateTimestamp) >= 1000) {
-					var rate = frameCount / ((now - framerateTimestamp) / 1000);
-					framerate = rate.toFixed(1);
-					frameCount = 0;
-					framerateTimestamp = Date.now();
-				}
-			}
-		}
-	}
-
-	function escapeCancelGame(evt) {
+	function cancelGame(evt) {
 		if (Interaction.detectKey(evt) == Interaction.KEYBOARD_ESC) {
 			evt.preventDefault();
 			gameState.playEntering = false;
