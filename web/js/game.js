@@ -1,10 +1,12 @@
-(function Game(){
+var Game = (function Game(){
 	"use strict";
 
 	Debug.ON = true;
-	Debug.BUILD_VERSION = "1.0.6";
+	Debug.BUILD_VERSION = "1.0.7";
 
-	var sceneCnv,
+	var publicAPI,
+
+		sceneCnv,
 		sceneCtx,
 
 		tmpCnv = Browser.createCanvas(),
@@ -34,14 +36,33 @@
 		loadResources(),
 		Browser.checkOrientation(),
 	])
-	.catch(function(err){
-		console.log(err);
-	})
 	.then(snapToViewport)
 	.then(initGame)
 	.then(onViewportSize)
-	.then(startWelcomeEntering);
+	.then(Welcome.start)
+	.catch(function onErr(err){
+		console.log(err);
+	});
 
+	// listen for game action signals from other modules
+	EVT.on("game:clear-scene",clearScene);
+	EVT.on("game:setup",setupGame);
+	EVT.on("game:cleanup-recycle",cleanupRecycle);
+	EVT.on("game:cancel-keyboard-esc",function cancelKeyboardEscape(){
+		Utils.offEvent(Interaction.EVENT_KEY,cancelGame);
+	});
+
+
+	publicAPI = {
+		gameState: gameState,
+		sceneCtx: null,
+
+		GAME_EASY: GAME_EASY,
+		GAME_MEDIUM: GAME_MEDIUM,
+		GAME_HARD: GAME_HARD,
+	};
+
+	return publicAPI;
 
 
 	// ******************************
@@ -65,7 +86,7 @@
 
 			function onDocument() {
 				sceneCnv = Browser.getElement("[rel~=js-scene]");
-				sceneCtx = sceneCnv.getContext("2d");
+				publicAPI.sceneCtx = sceneCtx = sceneCnv.getContext("2d");
 				resolve();
 			}
 		});
@@ -120,80 +141,6 @@
 				gameState.cloudScore,
 				gameState.bestCloudScore[gameState.difficulty]
 			);
-	}
-
-	function waitAtWelcomeScreen() {
-		// stop listening to ESC
-		Utils.offEvent(Interaction.EVENT_KEY,cancelGame);
-
-		Debug.resetFramerate();
-
-		// re-enable touch
-		Interaction.enableTouch();
-
-		// show screen
-		drawWelcome();
-
-		// recycle cloud objects
-		cleanupRecycle();
-
-		if (!gameState.welcomeWaiting) {
-			gameState.welcomeEntering = false;
-			gameState.welcomeWaiting = true;
-
-			var screen = Screens.getWelcomeScreen();
-			Utils.onEvent(Interaction.EVENT_PRESS,onInteraction);
-		}
-
-
-		// ******************************
-
-		function onInteraction(evt) {
-			var key;
-			var buttonPressed;
-
-			evt.preventDefault();
-
-			if ((key = Interaction.detectKey(evt))) {
-				if (key == Interaction.KEYBOARD_1 || key == Interaction.KEYBOARD_ENTER) {
-					buttonPressed = 0;
-				}
-				else if (key == Interaction.KEYBOARD_2) {
-					buttonPressed = 1;
-				}
-				else if (key == Interaction.KEYBOARD_3) {
-					buttonPressed = 2;
-				}
-			}
-			else if ((evt = Interaction.fixTouchCoords(evt))) {
-				for (var i=0; i<screen.hitAreas.length; i++) {
-					// recognized button press?
-					if (Utils.pointInArea(
-						evt.clientX-screen.x,
-						evt.clientY-screen.y,
-						screen.hitAreas[i]
-					)) {
-						buttonPressed = i;
-						break;
-					}
-				}
-			}
-
-			// respond to button press?
-			if (buttonPressed != null) {
-				Utils.offEvent(Interaction.EVENT_PRESS,onInteraction);
-				if (buttonPressed === 0) {
-					gameState.difficulty = GAME_EASY;
-				}
-				else if (buttonPressed === 1) {
-					gameState.difficulty = GAME_MEDIUM;
-				}
-				else if (buttonPressed === 2) {
-					gameState.difficulty = GAME_HARD;
-				}
-				startWelcomeLeaving();
-			}
-		}
 	}
 
 	function cleanupRecycle() {
@@ -476,30 +423,6 @@
 		gameState.shakeDeltaY = Math.min(-5,Math.round(-8 * gameState.speedRatio));
 	}
 
-	function startWelcomeEntering() {
-		// disable any touch for right now
-		Interaction.disableTouch();
-
-		gameState.playHintShown = false;
-		gameState.retryLeaving = false;
-		gameState.playLeaving = false;
-		gameState.welcomeEntering = true;
-		gameState.welcomeEnteringTickCount = 0;
-
-		gameState.RAFhook = requestAnimationFrame(runWelcomeEntering);
-	}
-
-	function startWelcomeLeaving() {
-		// disable any touch for right now
-		Interaction.disableTouch();
-
-		gameState.welcomeWaiting = false;
-		gameState.welcomeLeaving = true;
-		gameState.welcomeLeavingTickCount = gameState.welcomeEnteringTickCount;
-
-		gameState.RAFhook = requestAnimationFrame(runWelcomeLeaving);
-	}
-
 	function startPlayEntering() {
 		// disable any touch for right now
 		Interaction.disableTouch();
@@ -592,98 +515,6 @@
 		}
 
 		gameState.RAFhook = requestAnimationFrame(runRetryLeaving);
-	}
-
-	function runWelcomeEntering() {
-		Debug.trackFramerate();
-
-		gameState.RAFhook = null;
-
-		if (gameState.welcomeEntering) {
-			gameState.welcomeEnteringTickCount++;
-
-			if (gameState.welcomeEnteringTickCount <= gameState.welcomeEnteringTickThreshold) {
-				var opacityThreshold = 17;
-				var popThreshold = 15;
-				var popRatio = 1.1;
-				var opacity;
-				var ratio;
-
-				if (gameState.welcomeEnteringTickCount <= opacityThreshold) {
-					opacity = 1 - ((opacityThreshold-gameState.welcomeEnteringTickCount) / opacityThreshold);
-				}
-
-				if (gameState.welcomeEnteringTickCount <= popThreshold) {
-					ratio = popRatio * (
-						1 -
-						((popThreshold-gameState.welcomeEnteringTickCount) / popThreshold)
-					);
-				}
-				else {
-					ratio = popRatio - (
-						(popRatio - 1) * (
-							1 - (
-								(gameState.welcomeEnteringTickThreshold-gameState.welcomeEnteringTickCount) /
-								(gameState.welcomeEnteringTickThreshold-popThreshold)
-							)
-						)
-					);
-				}
-
-				drawWelcome(opacity,ratio);
-
-				gameState.RAFhook = requestAnimationFrame(runWelcomeEntering);
-			}
-			else {
-				waitAtWelcomeScreen();
-			}
-		}
-	}
-
-	function runWelcomeLeaving() {
-		Debug.trackFramerate();
-
-		gameState.RAFhook = null;
-
-		if (gameState.welcomeLeaving) {
-			gameState.welcomeLeavingTickCount--;
-
-			if (gameState.welcomeLeavingTickCount >= 0) {
-				var opacityThreshold = 17;
-				var popThreshold = 12;
-				var popRatio = 1.1;
-				var opacity;
-				var ratio;
-
-				if (gameState.welcomeLeavingTickCount <= opacityThreshold) {
-					opacity = 1 - ((opacityThreshold-gameState.welcomeLeavingTickCount) / opacityThreshold);
-				}
-
-				if (gameState.welcomeLeavingTickCount <= popThreshold) {
-					ratio = popRatio * (
-						1 -
-						((popThreshold-gameState.welcomeLeavingTickCount) / popThreshold)
-					);
-				}
-				else {
-					ratio = popRatio - (
-						(popRatio - 1) * (
-							1 - (
-								(gameState.welcomeLeavingTickThreshold-gameState.welcomeLeavingTickCount) /
-								(gameState.welcomeLeavingTickThreshold-popThreshold)
-							)
-						)
-					);
-				}
-
-				drawWelcome(opacity,ratio);
-
-				gameState.RAFhook = requestAnimationFrame(runWelcomeLeaving);
-			}
-			else {
-				setupGame();
-			}
-		}
 	}
 
 	function runPlayEntering() {
@@ -949,40 +780,12 @@
 			}
 			else if (gameState.gotoWelcome) {
 				gameState.gotoWelcome = false;
-				startWelcomeEntering();
+				Welcome.start();
 			}
 			else {
 				setupGame();
 			}
 		}
-	}
-
-	function drawWelcome(opacity,ratio) {
-		ratio = (ratio != null) ? ratio : 1;
-		opacity = (opacity != null) ? opacity: 1;
-
-		clearScene();
-
-		var screen = Screens.getWelcomeScreen();
-		screen.x = (Browser.viewportDims.width-screen.cnv.width) / 2;
-		screen.y = (Browser.viewportDims.height-screen.cnv.height) / 2;
-
-		sceneCtx.globalAlpha = opacity;
-
-		if (ratio != 1) {
-			sceneCtx.save();
-			Utils.scaleCanvas(sceneCtx,Browser.viewportDims.width/2,Browser.viewportDims.height/2,ratio,ratio);
-		}
-
-		sceneCtx.drawImage(screen.cnv,screen.x,screen.y);
-
-		if (ratio != 1) {
-			sceneCtx.restore();
-		}
-
-		sceneCtx.globalAlpha = 1;
-
-		Debug.showInfo(sceneCtx);
 	}
 
 	function drawIntro(drawOpacity,countdown,hintOpacity,showSunMeter) {
@@ -1614,7 +1417,7 @@
 				gameState.RAFhook = null;
 			}
 
-			waitAtWelcomeScreen();
+			Welcome.wait();
 		}
 	}
 
