@@ -1,6 +1,28 @@
 var Welcome = (function Welcome(){
 
-	var publicAPI;
+	var publicAPI,
+		welcomeScreen;
+
+
+	welcomeScreen = {
+		src: "images/screens/welcome.svg",
+		width: 900,
+		height: 750,
+		hitAreas: [
+			{ x1: 605, y1: 130, x2: 845, y2: 295, },	// easy
+			{ x1: 665, y1: 315, x2: 905, y2: 480, },	// medium
+			{ x1: 570, y1: 490, x2: 810, y2: 655, },	// hard
+		],
+		scaled: {
+			cnv: Browser.createCanvas(),
+			ctx: null,
+			hitAreas: [],
+		},
+	};
+
+	welcomeScreen.scaled.ctx = welcomeScreen.scaled.cnv.getContext("2d");
+	Screens.defineScreen("welcome",welcomeScreen);
+
 
 	publicAPI = {
 		start: startWelcomeEntering,

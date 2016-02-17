@@ -7,21 +7,6 @@ var Screens = (function Screens(){
 		elements;
 
 	screens = {
-		welcome: {
-			src: "images/screens/welcome.svg",
-			width: 900,
-			height: 750,
-			hitAreas: [
-				{ x1: 605, y1: 130, x2: 845, y2: 295, },	// easy
-				{ x1: 665, y1: 315, x2: 905, y2: 480, },	// medium
-				{ x1: 570, y1: 490, x2: 810, y2: 655, },	// hard
-			],
-			scaled: {
-				cnv: Browser.createCanvas(),
-				ctx: null,
-				hitAreas: [],
-			},
-		},
 		retry: {
 			src: "images/screens/retry.svg",
 			width: 900,
@@ -39,7 +24,6 @@ var Screens = (function Screens(){
 		},
 	};
 
-	screens.welcome.scaled.ctx = screens.welcome.scaled.cnv.getContext("2d");
 	screens.retry.scaled.ctx = screens.retry.scaled.cnv.getContext("2d");
 
 	elements = {
@@ -103,6 +87,7 @@ var Screens = (function Screens(){
 	publicAPI = {
 		load: load,
 		scaleTo: scaleTo,
+		defineScreen: defineScreen,
 		getWelcomeScreen: getWelcomeScreen,
 		getRetryScreen: getRetryScreen,
 		getElement: getElement,
@@ -112,6 +97,10 @@ var Screens = (function Screens(){
 
 
 	// ******************************
+
+	function defineScreen(screenID,screen) {
+		screens[screenID] = screen;
+	}
 
 	function load() {
 		return Promise.all(
