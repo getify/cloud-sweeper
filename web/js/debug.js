@@ -20,21 +20,21 @@ var Debug = (function Debug(){
 
 	// ******************************
 
-	function showFramerate(ctx) {
-		ctx.fillText(framerate + " fps",275,20);
+	function showFramerate() {
+		Game.sceneCtx.fillText(framerate + " fps",275,20);
 	}
 
-	function showBuild(ctx) {
-		ctx.fillText("Build: " + publicAPI.BUILD_VERSION,150,20);
+	function showBuild() {
+		Game.sceneCtx.fillText("Build: " + publicAPI.BUILD_VERSION,150,20);
 	}
 
-	function showInfo(ctx) {
+	function showInfo() {
 		if (publicAPI.ON) {
-			ctx.font = "20px sans-serif";
-			ctx.fillStyle = "white";
+			Game.sceneCtx.font = "20px sans-serif";
+			Game.sceneCtx.fillStyle = "white";
 
-			showFramerate(ctx);
-			showBuild(ctx);
+			showFramerate(Game.sceneCtx);
+			showBuild(Game.sceneCtx);
 		}
 	}
 

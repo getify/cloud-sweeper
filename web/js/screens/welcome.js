@@ -248,7 +248,7 @@ var Welcome = (function Welcome(){
 
 		Game.sceneCtx.globalAlpha = 1;
 
-		Debug.showInfo(Game.sceneCtx);
+		Debug.showInfo();
 	}
 
 })();

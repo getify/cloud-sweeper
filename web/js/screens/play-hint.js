@@ -47,9 +47,7 @@ var PlayHint = (function PlayHint(){
 
 	publicAPI = {
 		load: load,
-		getHint: getHint,
-		scaleTo: scaleTo,
-		tick: tick,
+		start: startPlayHint,
 	};
 
 	return publicAPI;
@@ -127,13 +125,165 @@ var PlayHint = (function PlayHint(){
 		return cache;
 	}
 
-	function tick() {
+	function hintTick() {
 		tickCount++;
 		if (tickCount == 6) {
 			dirty = true;
 			tickCount = 0;
 			frameIdx = (frameIdx + 1) % frames.length;
 		}
+	}
+
+	function startPlayHint() {
+		// disable any touch for right now
+		Interaction.disableTouch();
+
+		EVT.emit("game:listen-keyboard-esc");
+		EVT.emit("game:clear-scene");
+		EVT.emit("game:init-clouds");
+
+		Game.gameState.welcomeWaiting = false;
+		Game.gameState.retryLeaving = false;
+		Game.gameState.playEntering = true;
+		Game.gameState.planeXStart = (Game.gameState.planeX = -Game.gameState.planeSize);
+
+		Plane.setAngle(Game.gameState.planeAngle);
+		scaleTo(Game.gameState.planeSize * 1.5);
+
+		Game.gameState.RAFhook = requestAnimationFrame(runPlayHint);
+	}
+
+	function runPlayHint() {
+		Debug.trackFramerate();
+
+		Game.gameState.RAFhook = null;
+
+		if (Game.gameState.playEntering) {
+			Game.gameState.playEnteringTickCount++;
+
+			if (Game.gameState.playEnteringTickCount <= Game.gameState.playEnteringTickThreshold) {
+				if (!Game.gameState.playHintShown) {
+					var opacityTickThreshold = 60;
+					var planeTickThreshold = opacityTickThreshold + 60;
+					var hintTickThreshold = planeTickThreshold + 6;
+					var hintCompleteThreshold = hintTickThreshold + 90;
+					var hintFadeThreshold = hintCompleteThreshold + 30;
+					var hintFadeCompleteThreshold = hintFadeThreshold + 30;
+					var countdownTickThreshold = Game.gameState.playEnteringTickThreshold - 180;
+
+					var showSunMeter = Game.gameState.playEnteringTickCount >= hintTickThreshold;
+				}
+				else {
+					Game.gameState.playEnteringTickThreshold = 210;
+
+					var opacityTickThreshold = 60;
+					var planeTickThreshold = opacityTickThreshold + 60;
+					var hintTickThreshold = -1;
+					var hintCompleteThreshold = -1;
+					var hintFadeThreshold = -1;
+					var hintFadeCompleteThreshold = -1;
+					var countdownTickThreshold = Game.gameState.playEnteringTickThreshold - 180;
+
+					var showSunMeter = Game.gameState.playEnteringTickCount >= planeTickThreshold;
+				}
+
+				var sceneOpacity = 1;
+				// fade in the clouds?
+				if (Game.gameState.playEnteringTickCount < opacityTickThreshold) {
+					sceneOpacity = Game.gameState.playEnteringTickCount / opacityTickThreshold;
+				}
+				// slide in the plane?
+				else if (Game.gameState.playEnteringTickCount < planeTickThreshold) {
+					Game.gameState.planeX = Math.ceil(
+						Game.gameState.planeXStart +
+						(
+							(Game.gameState.planeXThreshold - Game.gameState.planeXStart) *
+							(
+								(Game.gameState.playEnteringTickCount-opacityTickThreshold) /
+								(planeTickThreshold-opacityTickThreshold)
+							)
+						)
+					);
+				}
+
+				var hintOpacity = 0;
+				if (Game.gameState.playEnteringTickCount >= hintTickThreshold) {
+					if (Game.gameState.playEnteringTickCount < hintCompleteThreshold) {
+						hintOpacity = 1;
+						hintTick();
+					}
+					else if (Game.gameState.playEnteringTickCount < hintFadeThreshold) {
+						hintOpacity = 1;
+					}
+					else if (Game.gameState.playEnteringTickCount < hintFadeCompleteThreshold) {
+						hintOpacity = (hintFadeCompleteThreshold - Game.gameState.playEnteringTickCount) / (hintFadeCompleteThreshold - hintFadeThreshold);
+					}
+				}
+
+				// start countdown?
+				var countdown = 0;
+				if (Game.gameState.playEnteringTickCount >= countdownTickThreshold) {
+					countdown = Math.min(Math.max(
+						Math.ceil(
+							(Game.gameState.playEnteringTickThreshold-Game.gameState.playEnteringTickCount) / 60
+						),
+						1
+					),3);
+				}
+
+				Plane.tick();
+				EVT.emit("game:background-tick");
+
+				drawPlayHint(sceneOpacity,countdown,hintOpacity,showSunMeter);
+
+				Game.gameState.RAFhook = requestAnimationFrame(runPlayHint);
+			}
+			else {
+				EVT.emit("game:play");
+			}
+		}
+	}
+
+	function drawPlayHint(drawOpacity,countdown,hintOpacity,showSunMeter) {
+		EVT.emit("game:clear-scene");
+
+		Game.sceneCtx.globalAlpha = drawOpacity;
+
+		for (var i=0; i<Game.gameState.backgroundClouds.length; i++) {
+			var cloud = Game.gameState.backgroundClouds[i];
+			Game.sceneCtx.drawImage(cloud.cnv,cloud.x,cloud.y);
+		}
+
+		Game.sceneCtx.globalAlpha = 1;
+
+		var plane = Plane.getPlane();
+		Game.sceneCtx.drawImage(plane.cnv,Game.gameState.planeX,Game.gameState.planeY);
+
+		// gray out screen to simulate clouding out the sun
+		EVT.emit("game:darken-scene",drawOpacity);
+
+		if (hintOpacity > 0) {
+			Game.sceneCtx.globalAlpha = hintOpacity;
+			var hint = getHint();
+			var planeHeight = Plane.getScaledHeight();
+			Game.sceneCtx.drawImage(hint.cnv,Game.gameState.planeXThreshold + Game.gameState.planeSize,Game.gameState.planeY + (planeHeight / 3));
+			Game.sceneCtx.globalAlpha = 1;
+		}
+
+		if (showSunMeter) {
+			// scoreboard and sun-meter
+			EVT.emit("game:draw-status");
+		}
+
+		if (countdown) {
+			var numChar = Text.getCachedCharacter("countdown:" + countdown);
+			var x = ((Browser.viewportDims.width - numChar.cnv.width) / 2);
+			var y = 25;
+
+			Game.sceneCtx.drawImage(numChar.cnv,x,y,numChar.cnv.width,numChar.cnv.height);
+		}
+
+		Debug.showInfo();
 	}
 
 })();
