@@ -1,4 +1,5 @@
 var Debug = (function Debug(){
+	"use strict";
 
 	var frameCount,
 		framerate,

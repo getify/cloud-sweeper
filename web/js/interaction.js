@@ -1,4 +1,5 @@
 var Interaction = (function Interaction(){
+	"use strict";
 
 	var publicAPI,
 		touchDisabled = false;
