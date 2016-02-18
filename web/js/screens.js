@@ -70,6 +70,7 @@ var Screens = (function Screens(){
 		load: load,
 		scaleTo: scaleTo,
 		defineScreen: defineScreen,
+		defineElement: defineElement,
 		getWelcomeScreen: getWelcomeScreen,
 		getRetryScreen: getRetryScreen,
 		getElement: getElement,
@@ -84,6 +85,10 @@ var Screens = (function Screens(){
 		screens[screenID] = screen;
 	}
 
+	function defineElement(elementID,element) {
+		elements[elementID] = element;
+	}
+
 	function load() {
 		return Promise.all(
 			Object.keys(screens)
@@ -93,7 +98,16 @@ var Screens = (function Screens(){
 			.concat(
 				Object.keys(elements)
 				.map(function mapper(elementID){
-					return Utils.loadImgOnEntry(elements[elementID]);
+					// load single element?
+					if (elements[elementID].src) {
+						return Utils.loadImgOnEntry(elements[elementID]);
+					}
+					// load frames of element's animation
+					else {
+						return Promise.all(
+							elements[elementID].map(Utils.loadImgOnEntry)
+						);
+					}
 				})
 			)
 		);

@@ -42,11 +42,13 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 
 	cache = {
 		cnv: cnv,
-		ctx: ctx
+		ctx: ctx,
 	};
 
+	Screens.defineElement("play-hint",frames);
+	Screens.defineElement("play-hint-text",text);
+
 	publicAPI = {
-		load: load,
 		start: startPlayHint,
 	};
 
@@ -54,12 +56,6 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 
 
 	// ******************************
-
-	function load() {
-		return Promise.all(
-			frames.concat([text]).map(Utils.loadImgOnEntry)
-		);
-	}
 
 	function scaleTo(hintWidth) {
 		dirty = true;

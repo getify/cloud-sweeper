@@ -2,7 +2,7 @@ var Game = (function Game(){
 	"use strict";
 
 	Debug.ON = true;
-	Debug.BUILD_VERSION = "1.0.11";
+	Debug.BUILD_VERSION = "1.0.12";
 
 	var publicAPI,
 
@@ -115,7 +115,6 @@ var Game = (function Game(){
 			Bird.load(),
 			Text.load(),
 			Screens.load(),
-			PlayIntroScreen.load(),
 		]);
 	}
 
