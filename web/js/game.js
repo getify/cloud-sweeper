@@ -107,7 +107,7 @@ var Game = (function Game(){
 			Bird.load(),
 			Text.load(),
 			Screens.load(),
-			PlayHint.load(),
+			PlayIntroScreen.load(),
 		]);
 	}
 
@@ -241,7 +241,7 @@ var Game = (function Game(){
 		gameState.retryLeaving = false;
 
 		return Promise.resolve(initGame())
-		.then(PlayHint.start);
+		.then(PlayIntroScreen.start);
 	}
 
 	function fillArray(arr,val,count) {
