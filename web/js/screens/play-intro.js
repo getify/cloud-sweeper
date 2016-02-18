@@ -1,4 +1,4 @@
-var PlayHint = (function PlayHint(){
+var PlayIntroScreen = (function PlayIntroScreen(){
 	"use strict";
 
 	var publicAPI,
@@ -15,25 +15,25 @@ var PlayHint = (function PlayHint(){
 		frameHeight = 200;
 
 	frames = [
-		{ src: "images/play-hint/frame-1.svg", },
-		{ src: "images/play-hint/frame-2.svg", },
-		{ src: "images/play-hint/frame-3.svg", },
-		{ src: "images/play-hint/frame-4.svg", },
-		{ src: "images/play-hint/frame-5.svg", },
-		{ src: "images/play-hint/frame-6.svg", },
-		{ src: "images/play-hint/frame-7.svg", },
-		{ src: "images/play-hint/frame-8.svg", },
-		{ src: "images/play-hint/frame-9.svg", },
-		{ src: "images/play-hint/frame-10.svg", },
-		{ src: "images/play-hint/frame-11.svg", },
-		{ src: "images/play-hint/frame-12.svg", },
-		{ src: "images/play-hint/frame-13.svg", },
-		{ src: "images/play-hint/frame-14.svg", },
-		{ src: "images/play-hint/frame-15.svg", },
+		{ src: "images/screens/play-hint/frame-1.svg", },
+		{ src: "images/screens/play-hint/frame-2.svg", },
+		{ src: "images/screens/play-hint/frame-3.svg", },
+		{ src: "images/screens/play-hint/frame-4.svg", },
+		{ src: "images/screens/play-hint/frame-5.svg", },
+		{ src: "images/screens/play-hint/frame-6.svg", },
+		{ src: "images/screens/play-hint/frame-7.svg", },
+		{ src: "images/screens/play-hint/frame-8.svg", },
+		{ src: "images/screens/play-hint/frame-9.svg", },
+		{ src: "images/screens/play-hint/frame-10.svg", },
+		{ src: "images/screens/play-hint/frame-11.svg", },
+		{ src: "images/screens/play-hint/frame-12.svg", },
+		{ src: "images/screens/play-hint/frame-13.svg", },
+		{ src: "images/screens/play-hint/frame-14.svg", },
+		{ src: "images/screens/play-hint/frame-15.svg", },
 	];
 
 	text = {
-		src: "images/play-hint/text.svg",
+		src: "images/screens/play-hint/text.svg",
 		width: 340,
 		height: 80,
 	},
