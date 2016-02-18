@@ -23,6 +23,7 @@ var Utils = (function Utils(){
 		debounce: debounce,
 		onEvent: onEvent,
 		offEvent: offEvent,
+		cacheScaledDigits: cacheScaledDigits,
 	};
 
 	return publicAPI;
@@ -123,6 +124,28 @@ var Utils = (function Utils(){
 		evtNames = evtNames.split(" ");
 		for (var i=0; i<evtNames.length; i++) {
 			Browser.eventRoot.removeEventListener(evtNames[i],handler,/*capturing=*/false);
+		}
+	}
+
+	function cacheScaledDigits(textType,cacheIDPrefix,scaleRatio,digitHeight) {
+		var digits = Text.getText(textType,"0123456789");
+
+		for (var i=0; i<=9; i++) {
+			var digit = String(i);
+			var cacheItem = Text.getCachedCharacter(cacheIDPrefix + ":" + digit);
+			var digitImg = digits[i];
+			var digitWidth = Math.ceil(digitImg.width * scaleRatio);
+
+			// need to (re)cache digit?
+			if (cacheItem.cnv.width != digitWidth || cacheItem.cnv.height != digitHeight) {
+				cacheItem.cnv.width = digitWidth;
+				cacheItem.cnv.height = digitHeight;
+				cacheItem.ctx.drawImage(digitImg,0,0,digitWidth,digitHeight);
+			}
+			// digits already cached for this size, so bail
+			else {
+				return;
+			}
 		}
 	}
 

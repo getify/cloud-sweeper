@@ -6,25 +6,7 @@ var Screens = (function Screens(){
 		screens,
 		elements;
 
-	screens = {
-		retry: {
-			src: "images/screens/retry.svg",
-			width: 900,
-			height: 600,
-			hitAreas: [
-				{ x1: 285, y1: 380, x2: 413, y2: 412, },	// best score badge
-				{ x1: 110, y1: 450, x2: 430, y2: 580, },	// go back
-				{ x1: 465, y1: 450, x2: 785, y2: 580, },	// fly again
-			],
-			scaled: {
-				cnv: Browser.createCanvas(),
-				ctx: null,
-				hitAreas: [],
-			},
-		},
-	};
-
-	screens.retry.scaled.ctx = screens.retry.scaled.cnv.getContext("2d");
+	screens = {};
 
 	elements = {
 		scoreboard: {

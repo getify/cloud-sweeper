@@ -2,7 +2,7 @@ var Game = (function Game(){
 	"use strict";
 
 	Debug.ON = true;
-	Debug.BUILD_VERSION = "1.0.10";
+	Debug.BUILD_VERSION = "1.0.11";
 
 	var publicAPI,
 
@@ -52,6 +52,14 @@ var Game = (function Game(){
 	EVT.on("game:draw-status",drawGameStatus);
 	EVT.on("game:background-tick",backgroundTick);
 	EVT.on("game:darken-scene",darkenScene);
+	EVT.on("game:shake",function shakeGameScene(){
+		if (!gameState.sceneShaking) {
+			shakeScene();
+		}
+		else {
+			shakeTick();
+		}
+	});
 	EVT.on("game:cleanup-recycle",cleanupRecycle);
 	EVT.on("game:listen-keyboard-esc",function listenKeyboardEscape(){
 		Utils.onEvent(Interaction.EVENT_KEY,cancelGame);
@@ -125,7 +133,8 @@ var Game = (function Game(){
 
 			if (key == Interaction.KEYBOARD_ESC) {
 				gameState.playing = false;
-				waitAtRetryScreen();
+				manageBestCloudScore();
+				RetryScreen.wait();
 			}
 		}
 	}
@@ -164,76 +173,6 @@ var Game = (function Game(){
 		}
 		gameState.backgroundClouds.length = gameState.gameClouds.length =
 			gameState.foregroundCloud.length = 0;
-	}
-
-	function waitAtRetryScreen() {
-		// stop listening to ESC
-		Utils.offEvent(Interaction.EVENT_KEY,cancelGame);
-
-		Debug.resetFramerate();
-
-		// re-enable touch
-		Interaction.enableTouch();
-
-		// draw retry screen
-		manageBestCloudScore();
-		gameState.darknessRatio = 0;
-		drawRetry(null,1,1);
-
-		// recycle cloud objects
-		cleanupRecycle();
-
-		if (!gameState.retryWaiting) {
-			gameState.retryEntering = false;
-			gameState.retryWaiting = true;
-
-			var screen = Screens.getRetryScreen();
-			Utils.onEvent(Interaction.EVENT_PRESS,onInteraction);
-		}
-
-
-		// ******************************
-
-		function onInteraction(evt) {
-			var key;
-			var buttonPressed;
-
-			evt.preventDefault();
-
-			if ((key = Interaction.detectKey(evt))) {
-				if (key == Interaction.KEYBOARD_1 || key == Interaction.KEYBOARD_ESC) {
-					buttonPressed = 1;
-				}
-				else if (key == Interaction.KEYBOARD_2 || key == Interaction.KEYBOARD_ENTER) {
-					buttonPressed = 2;
-				}
-			}
-			else if ((evt = Interaction.fixTouchCoords(evt))) {
-				// note: hitAreas[0] is the location of the best-score badge
-				for (var i=1; i<screen.hitAreas.length; i++) {
-					// recognized button press?
-					if (Utils.pointInArea(
-						evt.clientX-screen.x,
-						evt.clientY-screen.y,
-						screen.hitAreas[i]
-					)) {
-						buttonPressed = i;
-						break;
-					}
-				}
-			}
-
-			// respond to button press?
-			if (buttonPressed != null) {
-				Utils.offEvent(Interaction.EVENT_PRESS,onInteraction);
-				if (buttonPressed === 1) {
-					startRetryLeaving(/*gotoWelcome=*/true);
-				}
-				else if (buttonPressed === 2) {
-					startRetryLeaving(/*gotoWelcome=*/false);
-				}
-			}
-		}
 	}
 
 	function setupGame() {
@@ -480,32 +419,6 @@ var Game = (function Game(){
 		gameState.RAFhook = requestAnimationFrame(runPlayLeaving);
 	}
 
-	function startRetryEntering() {
-		// disable any touch for right now
-		Interaction.disableTouch();
-
-		gameState.retryEntering = true;
-		gameState.retryEnteringTickCount = 0;
-		gameState.origDarknessRatio = gameState.darknessRatio;
-		manageBestCloudScore();
-
-		gameState.RAFhook = requestAnimationFrame(runRetryEntering);
-	}
-
-	function startRetryLeaving(gotoWelcome) {
-		// disable any touch for right now
-		Interaction.disableTouch();
-
-		gameState.retryWaiting = false;
-		gameState.retryLeaving = true;
-		gameState.retryLeavingTickCount = 0;
-		if (gotoWelcome) {
-			gameState.gotoWelcome = true;
-		}
-
-		gameState.RAFhook = requestAnimationFrame(runRetryLeaving);
-	}
-
 	function runPlaying() {
 		Debug.trackFramerate();
 
@@ -577,111 +490,8 @@ var Game = (function Game(){
 			}
 			// start retry entry sequence
 			else {
-				startRetryEntering();
-			}
-		}
-	}
-
-	function runRetryEntering() {
-		Debug.trackFramerate();
-
-		gameState.RAFhook = null;
-
-		if (gameState.retryEntering) {
-			gameState.retryEnteringTickCount++;
-
-			if (gameState.retryEnteringTickCount <= (gameState.retryEnteringTickThreshold + gameState.shakeTickThreshold)) {
-				var fallingPosition = null;
-				var gameOverPosition = null;
-				var screenPosition = null;
-
-				var darknessThreshold = 20;
-				var fallingThreshold = 30;
-				var startGameOverThreshold = 30;
-				var endGameOverThreshold = gameState.retryEnteringTickThreshold;
-				var startScreenThreshold = 20;
-				var endScreenThreshold = gameState.retryEnteringTickThreshold;
-
-				if (gameState.retryEnteringTickCount <= darknessThreshold) {
-					gameState.darknessRatio =
-						gameState.origDarknessRatio *
-						((darknessThreshold-gameState.retryEnteringTickCount) / darknessThreshold);
-				}
-				else {
-					gameState.darknessRatio = 0;
-				}
-
-				if (gameState.retryEnteringTickCount <= fallingThreshold) {
-					fallingPosition = 1 - (
-						(fallingThreshold-gameState.retryEnteringTickCount) / fallingThreshold
-					);
-				}
-
-				if (gameState.retryEnteringTickCount >= startGameOverThreshold) {
-					if (gameState.retryEnteringTickCount <= endGameOverThreshold) {
-						gameOverPosition = 1 - (
-							(endGameOverThreshold-gameState.retryEnteringTickCount) /
-							(endGameOverThreshold-startGameOverThreshold)
-						);
-					}
-					else {
-						gameOverPosition = 1;
-					}
-				}
-
-				if (gameState.retryEnteringTickCount >= startScreenThreshold) {
-					if (gameState.retryEnteringTickCount <= endScreenThreshold) {
-						screenPosition = 1 - (
-							(endScreenThreshold-gameState.retryEnteringTickCount) /
-							(endScreenThreshold-startScreenThreshold)
-						);
-					}
-					else {
-						screenPosition = 1;
-					}
-				}
-
-				if (gameState.retryEnteringTickCount === gameState.retryEnteringTickThreshold) {
-					shakeScene();
-				}
-				else if (gameState.retryEnteringTickCount > gameState.retryEnteringTickThreshold) {
-					shakeTick();
-				}
-
-				drawRetry(fallingPosition,gameOverPosition,screenPosition);
-
-				gameState.RAFhook = requestAnimationFrame(runRetryEntering);
-			}
-			else {
-				waitAtRetryScreen();
-			}
-		}
-	}
-
-	function runRetryLeaving() {
-		Debug.trackFramerate();
-
-		gameState.RAFhook = null;
-
-		if (gameState.retryLeaving) {
-			gameState.retryLeavingTickCount++;
-
-			if (gameState.retryLeavingTickCount <= gameState.retryLeavingTickThreshold) {
-				var y = Math.floor(
-					-Browser.viewportDims.height *
-					(gameState.retryLeavingTickCount/gameState.retryLeavingTickThreshold)
-				);
-
-				drawRetry(null,1,1,0,-y);
-
-				gameState.RAFhook = requestAnimationFrame(runRetryLeaving);
-			}
-			else if (gameState.gotoWelcome) {
-				gameState.gotoWelcome = false;
-				WelcomeScreen.start();
-			}
-			else {
-				setupGame();
+				manageBestCloudScore();
+				RetryScreen.start();
 			}
 		}
 	}
@@ -796,7 +606,7 @@ var Game = (function Game(){
 		var scoreY = scoreboard.y + ((scoreboard.scaled.size-scoreHeight) / 2);
 
 		// scale and cache all digits, if needed
-		cacheScaledDigits("small","scoreboard",ratio,scoreHeight);
+		Utils.cacheScaledDigits("small","scoreboard",ratio,scoreHeight);
 
 		// display score text one character at a time
 		for (var i=0; i<scoreDigits.length; i++) {
@@ -837,161 +647,6 @@ var Game = (function Game(){
 		sceneCtx.globalAlpha = 0.9;
 		sceneCtx.drawImage(tmpCnv,sunMeterX,sunMeterY);
 		sceneCtx.globalAlpha = 1;
-	}
-
-	function drawRetry(fallingPosition,gameOverPosition,screenPosition,leavingOffsetX,leavingOffsetY) {
-		var cloud, bird;
-
-		clearScene();
-
-		// offset scene drawing for shaking
-		if (gameState.sceneShaking) {
-			sceneCtx.save();
-			sceneCtx.translate(gameState.shakeOffsetX,gameState.shakeOffsetY);
-		}
-
-		if (fallingPosition != null) {
-			var height = Browser.viewportDims.height;
-			if (gameState.foregroundCloud.length > 0) {
-				height = Math.max(height,gameState.foregroundCloud[0].y+gameState.foregroundCloud[0].cnv.height);
-			}
-			var yOffset = fallingPosition * -height;
-			sceneCtx.save();
-			sceneCtx.translate(0,yOffset);
-
-			for (var i=0; i<gameState.backgroundClouds.length; i++) {
-				cloud = gameState.backgroundClouds[i];
-				sceneCtx.drawImage(cloud.cnv,cloud.x,cloud.y);
-			}
-
-			for (var i=0; i<gameState.gameClouds.length; i++) {
-				cloud = gameState.gameClouds[i];
-				if (!cloud.hit) {
-					sceneCtx.drawImage(cloud.cnv,cloud.x,cloud.y);
-				}
-				else {
-					sceneCtx.drawImage(cloud.exploding.cnv,cloud.x,cloud.y);
-				}
-			}
-
-			if (gameState.birds.length > 0) {
-				bird = gameState.birds[0];
-				sceneCtx.drawImage(bird.cnv,bird.x,bird.y + bird.flappingOffsetY);
-			}
-
-			if (gameState.foregroundCloud.length > 0) {
-				cloud = gameState.foregroundCloud[0];
-				sceneCtx.drawImage(cloud.cnv,cloud.x,cloud.y);
-			}
-
-			sceneCtx.restore();
-		}
-
-		// gray out screen to simulate clouding out the sun
-		darkenScene();
-
-		// offset scene for retry-leaving
-		if (leavingOffsetX != null && leavingOffsetY != null) {
-			sceneCtx.save();
-			sceneCtx.translate(leavingOffsetX,leavingOffsetY);
-		}
-
-		// draw retry screen
-		var screen = Screens.getRetryScreen();
-		var startY = Browser.viewportDims.height;
-		var endY = (Browser.viewportDims.height - screen.height) / 2;
-
-		if (screenPosition != null) {
-			screen.x = (Browser.viewportDims.width - screen.width) / 2;
-			screen.y = startY + (screenPosition * (endY - startY));
-			sceneCtx.drawImage(screen.cnv,screen.x,screen.y,screen.width,screen.height);
-
-			// calculate best-score dimensions
-			var bestScoreBadgeX = screen.x + screen.hitAreas[0].x1;
-			var bestScoreBadgeY = screen.y + screen.hitAreas[0].y1;
-			var bestScoreBadgeWidth = screen.hitAreas[0].x2 - screen.hitAreas[0].x1 + 1;
-			var bestScoreBadgeHeight = screen.hitAreas[0].y2 - screen.hitAreas[0].y1 + 1;
-
-			var tmp0 = Text.getText("small","0")[0];
-			var bestScoreDigits = Text.getText("small",String(gameState.bestCloudScore[gameState.difficulty]));
-
-			var actualScoreWidth = 0;
-			var actualScoreHeight = 0;
-			for (var i=0; i<bestScoreDigits.length; i++) {
-				actualScoreWidth += bestScoreDigits[i].width;
-				actualScoreHeight = Math.max(actualScoreHeight,bestScoreDigits[i].height);
-			}
-
-			// sizing the score text to fit comfortably within the best-score badge
-			var ratio = 0.9 * Math.min(
-				bestScoreBadgeWidth / (tmp0.width * bestScoreDigits.length),
-				bestScoreBadgeHeight / tmp0.height
-			);
-			var scoreHeight = Math.ceil(ratio * actualScoreHeight);
-			var scoreWidth = Math.ceil(ratio * actualScoreWidth);
-			var scoreX = bestScoreBadgeX + ((bestScoreBadgeWidth-scoreWidth) / 2);
-			var scoreY = bestScoreBadgeY + ((bestScoreBadgeHeight-scoreHeight) / 2);
-
-			// scale and cache all digits, if needed
-			cacheScaledDigits("small","bestscore",ratio,scoreHeight);
-
-			// display best-score text one character at a time
-			for (var i=0; i<bestScoreDigits.length; i++) {
-				var scoreDigit = String(gameState.bestCloudScore[gameState.difficulty]).charAt(i);
-				var digitWidth = Math.ceil(bestScoreDigits[i].width * ratio);
-				var scaledCachedDigit = Text.getCachedCharacter("bestscore:" + scoreDigit);
-
-				// draw best-score character
-				sceneCtx.drawImage(scaledCachedDigit.cnv,scoreX,scoreY);
-				scoreX += digitWidth;
-			}
-		}
-
-		// draw game-over text
-		if (gameOverPosition != null) {
-			var gameOver = Screens.getElement("gameover");
-			startY = -gameOver.scaled.height;
-			endY = endY + gameOver.scaled.height;
-			gameOver.y = startY + (gameOverPosition * (endY - startY));
-			sceneCtx.drawImage(gameOver.scaled.cnv,gameOver.x,gameOver.y);
-		}
-
-		// scoreboard and sun-meter
-		drawGameStatus();
-
-		// offset scene for retry-leaving
-		if (leavingOffsetX != null && leavingOffsetY != null) {
-			sceneCtx.restore();
-		}
-
-		// offset scene drawing for shaking
-		if (gameState.sceneShaking) {
-			sceneCtx.restore();
-		}
-
-		Debug.showInfo();
-	}
-
-	function cacheScaledDigits(textType,cacheIDPrefix,scaleRatio,digitHeight) {
-		var digits = Text.getText(textType,"0123456789");
-
-		for (var i=0; i<=9; i++) {
-			var digit = String(i);
-			var cacheItem = Text.getCachedCharacter(cacheIDPrefix + ":" + digit);
-			var digitImg = digits[i];
-			var digitWidth = Math.ceil(digitImg.width * scaleRatio);
-
-			// need to (re)cache digit?
-			if (cacheItem.cnv.width != digitWidth || cacheItem.cnv.height != digitHeight) {
-				cacheItem.cnv.width = digitWidth;
-				cacheItem.cnv.height = digitHeight;
-				cacheItem.ctx.drawImage(digitImg,0,0,digitWidth,digitHeight);
-			}
-			// digits already cached for this size, so bail
-			else {
-				return;
-			}
-		}
 	}
 
 	function shakeScene() {
@@ -1238,7 +893,7 @@ var Game = (function Game(){
 		// scale and cache all countdown digits, if needed
 		var tmp0 = Text.getText("big","0")[0];
 		var ratio = gameState.planeSize / tmp0.width / 2.5;
-		cacheScaledDigits("big","countdown",ratio,Math.ceil(tmp0.height * ratio));
+		Utils.cacheScaledDigits("big","countdown",ratio,Math.ceil(tmp0.height * ratio));
 
 		// resize during animation not supported
 		if (gameState.playEntering || gameState.playing || gameState.playLeaving ||
@@ -1259,7 +914,8 @@ var Game = (function Game(){
 				gameState.RAFhook = null;
 			}
 
-			waitAtRetryScreen();
+			manageBestCloudScore();
+			RetryScreen.wait();
 		}
 		else if (gameState.welcomeEntering || gameState.welcomeWaiting || gameState.welcomeLeaving) {
 			gameState.welcomeEntering = false;
@@ -1663,7 +1319,7 @@ var Game = (function Game(){
 		if (Interaction.detectKey(evt) == Interaction.KEYBOARD_ESC) {
 			evt.preventDefault();
 			gameState.playEntering = false;
-			waitAtRetryScreen();
+			RetryScreen.wait();
 		}
 	}
 
