@@ -1,4 +1,5 @@
-var Welcome = (function Welcome(){
+var WelcomeScreen = (function WelcomeScreen(){
+	"use strict";
 
 	var publicAPI,
 		welcomeScreen;
@@ -27,7 +28,6 @@ var Welcome = (function Welcome(){
 	publicAPI = {
 		start: startWelcomeEntering,
 		wait: waitAtWelcomeScreen,
-		leave: startWelcomeLeaving,
 	};
 
 	return publicAPI;

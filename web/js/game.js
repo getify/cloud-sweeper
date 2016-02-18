@@ -39,7 +39,7 @@ var Game = (function Game(){
 	.then(snapToViewport)
 	.then(initGame)
 	.then(onViewportSize)
-	.then(Welcome.start)
+	.then(WelcomeScreen.start)
 	.catch(function onErr(err){
 		console.log(err);
 	});
@@ -678,7 +678,7 @@ var Game = (function Game(){
 			}
 			else if (gameState.gotoWelcome) {
 				gameState.gotoWelcome = false;
-				Welcome.start();
+				WelcomeScreen.start();
 			}
 			else {
 				setupGame();
@@ -1271,7 +1271,7 @@ var Game = (function Game(){
 				gameState.RAFhook = null;
 			}
 
-			Welcome.wait();
+			WelcomeScreen.wait();
 		}
 	}
 
