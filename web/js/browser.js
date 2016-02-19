@@ -28,7 +28,7 @@ var Browser = (function Browser(){
 		updateViewportDims: updateViewportDims,
 
 		eventRoot: document,
-		DOMReady: document.ready,
+		DOMReady: (document.readyState == "complete"),
 		viewportDims: {},
 		orientationLocked: false,
 	};
