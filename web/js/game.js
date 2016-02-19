@@ -2,7 +2,7 @@ var Game = (function Game(){
 	"use strict";
 
 	Debug.ON = true;
-	Debug.BUILD_VERSION = "1.0.13";
+	Debug.BUILD_VERSION = "1.0.14";
 
 	var publicAPI,
 
@@ -41,7 +41,7 @@ var Game = (function Game(){
 	.then(onViewportSize)
 	.then(WelcomeScreen.start)
 	.catch(function onErr(err){
-		console.log(err);
+		console.error(err.stack || err);
 	});
 
 	// listen for game action signals from other modules
@@ -1296,7 +1296,7 @@ var Game = (function Game(){
 		if (gameState.sceneShaking) {
 			gameState.shakeTickCount++;
 
-			if (gameState.shakeTickCount < gameState.shakeTickThreshold) {
+			if (gameState.shakeTickCount <= gameState.shakeTickThreshold) {
 				gameState.shakeOffsetX = Math.floor((gameState.shakeOffsetX + gameState.shakeDeltaX) * 10) / 10;
 				gameState.shakeOffsetY = Math.floor((gameState.shakeOffsetY + gameState.shakeDeltaY) * 10) / 10;
 

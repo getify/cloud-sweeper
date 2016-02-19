@@ -55,7 +55,7 @@ var RetryScreen = (function RetryScreen(){
 		if (Game.gameState.retryEntering) {
 			Game.gameState.retryEnteringTickCount++;
 
-			if (Game.gameState.retryEnteringTickCount <= (Game.gameState.retryEnteringTickThreshold + Game.gameState.shakeTickThreshold)) {
+			if (Game.gameState.retryEnteringTickCount <= (Game.gameState.retryEnteringTickThreshold + Game.gameState.shakeTickThreshold + 1)) {
 				var fallingPosition = null;
 				var gameOverPosition = null;
 				var screenPosition = null;
@@ -106,10 +106,10 @@ var RetryScreen = (function RetryScreen(){
 					}
 				}
 
-				if (Game.gameState.retryEnteringTickCount === Game.gameState.retryEnteringTickThreshold) {
-					EVT.emit("game:shake");
-				}
-				else if (Game.gameState.retryEnteringTickCount > Game.gameState.retryEnteringTickThreshold) {
+				if (
+					Game.gameState.sceneShaking ||
+					Game.gameState.retryEnteringTickCount >= Game.gameState.retryEnteringTickThreshold
+				) {
 					EVT.emit("game:shake");
 				}
 
