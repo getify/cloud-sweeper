@@ -6,7 +6,7 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 		tickCount = -1,
 		frameIdx = 0,
 		cnv = Browser.createCanvas(),
-		ctx,
+		ctx = cnv.getContext("2d"),
 		frames,
 		text,
 		scaledFrames = [],
@@ -36,9 +36,7 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 		src: "images/screens/play-hint/text.svg",
 		width: 340,
 		height: 80,
-	},
-
-	ctx = cnv.getContext("2d");
+	};
 
 	cache = {
 		cnv: cnv,
@@ -48,8 +46,9 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 	Screens.defineElement("play-hint",frames);
 	Screens.defineElement("play-hint-text",text);
 
+
 	publicAPI = {
-		start: startPlayHint,
+		start: startPlayIntro,
 	};
 
 	return publicAPI;
@@ -67,7 +66,7 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 		});
 	}
 
-	function scaleHint(hint,frameIdx,hintWidth) {
+	function scaleHint(hintFrame,frameIdx,hintWidth) {
 		var scaledHint = (scaledFrames[frameIdx] = scaledFrames[frameIdx] || {});
 
 		if (hintWidth !== scaledHint.hintWidth) {
@@ -88,7 +87,7 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 			scaledHint.cnv.width = scaledHint.width;
 			scaledHint.cnv.height = scaledHint.height + (text.height * hintTextRatio);
 			scaledHint.ctx.drawImage(
-				hint.img,
+				hintFrame.img,
 				0,
 				0,
 				scaledHint.width,
@@ -123,6 +122,7 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 
 	function hintTick() {
 		tickCount++;
+		// run hint animation frames at 1/6 the tick speed
 		if (tickCount == 6) {
 			dirty = true;
 			tickCount = 0;
@@ -130,7 +130,7 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 		}
 	}
 
-	function startPlayHint() {
+	function startPlayIntro() {
 		// disable any touch for right now
 		Interaction.disableTouch();
 
@@ -146,10 +146,10 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 		Plane.setAngle(Game.gameState.planeAngle);
 		scaleTo(Game.gameState.planeSize * 1.5);
 
-		Game.gameState.RAFhook = requestAnimationFrame(runPlayHint);
+		Game.gameState.RAFhook = requestAnimationFrame(runPlayIntro);
 	}
 
-	function runPlayHint() {
+	function runPlayIntro() {
 		Debug.trackFramerate();
 
 		Game.gameState.RAFhook = null;
@@ -230,9 +230,9 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 				Plane.tick();
 				EVT.emit("game:background-tick");
 
-				drawPlayHint(sceneOpacity,countdown,hintOpacity,showSunMeter);
+				drawPlayIntro(sceneOpacity,countdown,hintOpacity,showSunMeter);
 
-				Game.gameState.RAFhook = requestAnimationFrame(runPlayHint);
+				Game.gameState.RAFhook = requestAnimationFrame(runPlayIntro);
 			}
 			else {
 				EVT.emit("game:play");
@@ -240,7 +240,7 @@ var PlayIntroScreen = (function PlayIntroScreen(){
 		}
 	}
 
-	function drawPlayHint(drawOpacity,countdown,hintOpacity,showSunMeter) {
+	function drawPlayIntro(drawOpacity,countdown,hintOpacity,showSunMeter) {
 		EVT.emit("game:clear-scene");
 
 		Game.sceneCtx.globalAlpha = drawOpacity;
