@@ -1,1 +1,265 @@
-!function(e,t,n){"function"==typeof define&&define.amd?define(n):"undefined"!=typeof module&&module.exports?module.exports=n():t[e]=n(e,t)}("EventEmitter3",this,function(){"use strict";function e(e,t,n){this.fn=e,this.context=t,this.once=n||!1}function t(){}var n="function"!=typeof Object.create?"~":!1;return t.prototype._events=void 0,t.prototype.listeners=function(e,t){var s=n?n+e:e,r=this._events&&this._events[s];if(t)return!!r;if(!r)return[];if(r.fn)return[r.fn];for(var i=0,o=r.length,c=new Array(o);o>i;i++)c[i]=r[i].fn;return c},t.prototype.emit=function(e,t,s,r,i,o){var c=n?n+e:e;if(!this._events||!this._events[c])return!1;var f,h,v=this._events[c],u=arguments.length;if("function"==typeof v.fn){switch(v.once&&this.removeListener(e,v.fn,void 0,!0),u){case 1:return v.fn.call(v.context),!0;case 2:return v.fn.call(v.context,t),!0;case 3:return v.fn.call(v.context,t,s),!0;case 4:return v.fn.call(v.context,t,s,r),!0;case 5:return v.fn.call(v.context,t,s,r,i),!0;case 6:return v.fn.call(v.context,t,s,r,i,o),!0}for(h=1,f=new Array(u-1);u>h;h++)f[h-1]=arguments[h];v.fn.apply(v.context,f)}else{var a,l=v.length;for(h=0;l>h;h++)switch(v[h].once&&this.removeListener(e,v[h].fn,void 0,!0),u){case 1:v[h].fn.call(v[h].context);break;case 2:v[h].fn.call(v[h].context,t);break;case 3:v[h].fn.call(v[h].context,t,s);break;default:if(!f)for(a=1,f=new Array(u-1);u>a;a++)f[a-1]=arguments[a];v[h].fn.apply(v[h].context,f)}}return!0},t.prototype.on=function(t,s,r){var i=new e(s,r||this),o=n?n+t:t;return this._events||(this._events=n?{}:Object.create(null)),this._events[o]?this._events[o].fn?this._events[o]=[this._events[o],i]:this._events[o].push(i):this._events[o]=i,this},t.prototype.once=function(t,s,r){var i=new e(s,r||this,!0),o=n?n+t:t;return this._events||(this._events=n?{}:Object.create(null)),this._events[o]?this._events[o].fn?this._events[o]=[this._events[o],i]:this._events[o].push(i):this._events[o]=i,this},t.prototype.removeListener=function(e,t,s,r){var i=n?n+e:e;if(!this._events||!this._events[i])return this;var o=this._events[i],c=[];if(t)if(o.fn)(o.fn!==t||r&&!o.once||s&&o.context!==s)&&c.push(o);else for(var f=0,h=o.length;h>f;f++)(o[f].fn!==t||r&&!o[f].once||s&&o[f].context!==s)&&c.push(o[f]);return c.length?this._events[i]=1===c.length?c[0]:c:delete this._events[i],this},t.prototype.removeAllListeners=function(e){return this._events?(e?delete this._events[n?n+e:e]:this._events=n?{}:Object.create(null),this):this},t.prototype.off=t.prototype.removeListener,t.prototype.addListener=t.prototype.on,t.prototype.setMaxListeners=function(){return this},t.prefixed=n,t});
+(function UMD(name,context,definition){
+	if (typeof define === "function" && define.amd) { define(definition); }
+	else if (typeof module !== "undefined" && module.exports) { module.exports = definition(); }
+	else { context[name] = definition(name,context); }
+})("EventEmitter3",this,function DEF(name,context){
+
+'use strict';
+
+//
+// We store our EE objects in a plain object whose properties are event names.
+// If `Object.create(null)` is not supported we prefix the event names with a
+// `~` to make sure that the built-in object properties are not overridden or
+// used as an attack vector.
+// We also assume that `Object.create(null)` is available when the event name
+// is an ES6 Symbol.
+//
+var prefix = typeof Object.create !== 'function' ? '~' : false;
+
+/**
+ * Representation of a single EventEmitter function.
+ *
+ * @param {Function} fn Event handler to be called.
+ * @param {Mixed} context Context for function execution.
+ * @param {Boolean} [once=false] Only emit once
+ * @api private
+ */
+function EE(fn, context, once) {
+  this.fn = fn;
+  this.context = context;
+  this.once = once || false;
+}
+
+/**
+ * Minimal EventEmitter interface that is molded against the Node.js
+ * EventEmitter interface.
+ *
+ * @constructor
+ * @api public
+ */
+function EventEmitter() { /* Nothing to set */ }
+
+/**
+ * Holds the assigned EventEmitters by name.
+ *
+ * @type {Object}
+ * @private
+ */
+EventEmitter.prototype._events = undefined;
+
+/**
+ * Return a list of assigned event listeners.
+ *
+ * @param {String} event The events that should be listed.
+ * @param {Boolean} exists We only need to know if there are listeners.
+ * @returns {Array|Boolean}
+ * @api public
+ */
+EventEmitter.prototype.listeners = function listeners(event, exists) {
+  var evt = prefix ? prefix + event : event
+    , available = this._events && this._events[evt];
+
+  if (exists) return !!available;
+  if (!available) return [];
+  if (available.fn) return [available.fn];
+
+  for (var i = 0, l = available.length, ee = new Array(l); i < l; i++) {
+    ee[i] = available[i].fn;
+  }
+
+  return ee;
+};
+
+/**
+ * Emit an event to all registered event listeners.
+ *
+ * @param {String} event The name of the event.
+ * @returns {Boolean} Indication if we've emitted an event.
+ * @api public
+ */
+EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+  var evt = prefix ? prefix + event : event;
+
+  if (!this._events || !this._events[evt]) return false;
+
+  var listeners = this._events[evt]
+    , len = arguments.length
+    , args
+    , i;
+
+  if ('function' === typeof listeners.fn) {
+    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+
+    switch (len) {
+      case 1: return listeners.fn.call(listeners.context), true;
+      case 2: return listeners.fn.call(listeners.context, a1), true;
+      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+    }
+
+    for (i = 1, args = new Array(len -1); i < len; i++) {
+      args[i - 1] = arguments[i];
+    }
+
+    listeners.fn.apply(listeners.context, args);
+  } else {
+    var length = listeners.length
+      , j;
+
+    for (i = 0; i < length; i++) {
+      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+
+      switch (len) {
+        case 1: listeners[i].fn.call(listeners[i].context); break;
+        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
+        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
+        default:
+          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
+            args[j - 1] = arguments[j];
+          }
+
+          listeners[i].fn.apply(listeners[i].context, args);
+      }
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Register a new EventListener for the given event.
+ *
+ * @param {String} event Name of the event.
+ * @param {Function} fn Callback function.
+ * @param {Mixed} [context=this] The context of the function.
+ * @api public
+ */
+EventEmitter.prototype.on = function on(event, fn, context) {
+  var listener = new EE(fn, context || this)
+    , evt = prefix ? prefix + event : event;
+
+  if (!this._events) this._events = prefix ? {} : Object.create(null);
+  if (!this._events[evt]) this._events[evt] = listener;
+  else {
+    if (!this._events[evt].fn) this._events[evt].push(listener);
+    else this._events[evt] = [
+      this._events[evt], listener
+    ];
+  }
+
+  return this;
+};
+
+/**
+ * Add an EventListener that's only called once.
+ *
+ * @param {String} event Name of the event.
+ * @param {Function} fn Callback function.
+ * @param {Mixed} [context=this] The context of the function.
+ * @api public
+ */
+EventEmitter.prototype.once = function once(event, fn, context) {
+  var listener = new EE(fn, context || this, true)
+    , evt = prefix ? prefix + event : event;
+
+  if (!this._events) this._events = prefix ? {} : Object.create(null);
+  if (!this._events[evt]) this._events[evt] = listener;
+  else {
+    if (!this._events[evt].fn) this._events[evt].push(listener);
+    else this._events[evt] = [
+      this._events[evt], listener
+    ];
+  }
+
+  return this;
+};
+
+/**
+ * Remove event listeners.
+ *
+ * @param {String} event The event we want to remove.
+ * @param {Function} fn The listener that we need to find.
+ * @param {Mixed} context Only remove listeners matching this context.
+ * @param {Boolean} once Only remove once listeners.
+ * @api public
+ */
+EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
+  var evt = prefix ? prefix + event : event;
+
+  if (!this._events || !this._events[evt]) return this;
+
+  var listeners = this._events[evt]
+    , events = [];
+
+  if (fn) {
+    if (listeners.fn) {
+      if (
+           listeners.fn !== fn
+        || (once && !listeners.once)
+        || (context && listeners.context !== context)
+      ) {
+        events.push(listeners);
+      }
+    } else {
+      for (var i = 0, length = listeners.length; i < length; i++) {
+        if (
+             listeners[i].fn !== fn
+          || (once && !listeners[i].once)
+          || (context && listeners[i].context !== context)
+        ) {
+          events.push(listeners[i]);
+        }
+      }
+    }
+  }
+
+  //
+  // Reset the array, or remove it completely if we have no more listeners.
+  //
+  if (events.length) {
+    this._events[evt] = events.length === 1 ? events[0] : events;
+  } else {
+    delete this._events[evt];
+  }
+
+  return this;
+};
+
+/**
+ * Remove all listeners or only the listeners for the specified event.
+ *
+ * @param {String} event The event want to remove all listeners for.
+ * @api public
+ */
+EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+  if (!this._events) return this;
+
+  if (event) delete this._events[prefix ? prefix + event : event];
+  else this._events = prefix ? {} : Object.create(null);
+
+  return this;
+};
+
+//
+// Alias methods names because people roll like that.
+//
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+//
+// This function doesn't apply anymore.
+//
+EventEmitter.prototype.setMaxListeners = function setMaxListeners() {
+  return this;
+};
+
+//
+// Expose the prefix.
+//
+EventEmitter.prefixed = prefix;
+
+return EventEmitter;
+
+});
