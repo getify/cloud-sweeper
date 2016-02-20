@@ -2,7 +2,7 @@ var Game = (function Game(){
 	"use strict";
 
 	Debug.ON = true;
-	Debug.BUILD_VERSION = "1.0.15";
+	Debug.BUILD_VERSION = "1.0.16";
 
 	var publicAPI,
 

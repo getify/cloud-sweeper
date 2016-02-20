@@ -47,27 +47,60 @@
 
 	// ******************************
 
+	function buildCacheItems() {
+		part.src.forEach(function eacher(_,idx){
+			// cache all degrees in 0.5 snap increments
+			for (
+				var deg = Game.gameState.minPlaneAngle;
+				deg <= Game.gameState.maxPlaneAngle;
+				deg += 0.5
+			) {
+				part.scaled[idx].cache[ cacheIndex(deg) ] = buildCacheItem();
+			}
+		});
+	}
+
+	function buildCacheItem() {
+		var item = {
+			cnv: Browser.createCanvas(),
+			ctx: null,
+			dirty: true,
+			offsetX: 0,
+			offsetY: 0,
+		};
+
+		item.ctx = item.cnv.getContext("2d");
+
+		return item;
+	}
+
+	// hash degrees into a cache index
+	function cacheIndex(degrees) {
+		var cacheIdx = Math.abs(degrees * 2);
+		if (degrees < 0) {
+
+			cacheIdx += 40;
+		}
+
+		return cacheIdx;
+	}
+
 	function getPart(degrees) {
 		var cacheIdx, cacheItem, radians,
 			cnv, ctx, scaled = part.scaled[frameIdx];
 
-		// snap to 0.5 increments
+		// snap degrees to 0.5 increments
 		degrees = Math.floor(degrees * 2) / 2;
 		radians = degrees * Math.PI / 180;
 
-		// hash the clamped degrees into a cache index
-		cacheIdx = Math.abs(degrees * 2);
-		if (degrees < 0) cacheIdx += 40;
-
-		cacheItem = (scaled.cache[cacheIdx] = scaled.cache[cacheIdx] || {});
-
-		if (!cacheItem.cnv) {
-			cacheItem.cnv = Browser.createCanvas();
-			cacheItem.ctx = cacheItem.cnv.getContext("2d");
-			cacheItem.dirty = true;
-			cacheItem.offsetX = scaled.offsetX;
-			cacheItem.offsetY = scaled.offsetY;
+		// get cache item
+		if (scaled.cache.length == 0) {
+			buildCacheItems();
 		}
+		cacheIdx = cacheIndex(degrees);
+		cacheItem = scaled.cache[cacheIdx];
+		cacheItem.offsetX = scaled.offsetX;
+		cacheItem.offsetY = scaled.offsetY;
 
 		cnv = cacheItem.cnv;
 		ctx = cacheItem.ctx;
