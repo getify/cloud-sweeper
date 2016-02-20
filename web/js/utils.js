@@ -1,7 +1,8 @@
 var Utils = (function Utils(){
 	"use strict";
 
-	var publicAPI;
+	var publicAPI,
+		digits;
 
 	// polyfill ES6 `Math.sign`
 	if (!Math.sign) {
@@ -11,6 +12,11 @@ var Utils = (function Utils(){
 			return x < 0 ? -1 : 1;
 		};
 	}
+
+	digits = {
+		"small": null,
+		"big": null,
+	};
 
 	publicAPI = {
 		loadImgOnEntry: loadImgOnEntry,
@@ -128,12 +134,14 @@ var Utils = (function Utils(){
 	}
 
 	function cacheScaledDigits(textType,cacheIDPrefix,scaleRatio,digitHeight) {
-		var digits = Text.getText(textType,"0123456789");
+		if (!digits[textType]) {
+			digits[textType] = Text.getText(textType,"0123456789",[]);
+		}
 
 		for (var i=0; i<=9; i++) {
 			var digit = String(i);
 			var cacheItem = Text.getCachedCharacter(cacheIDPrefix + ":" + digit);
-			var digitImg = digits[i];
+			var digitImg = digits[textType][i];
 			var digitWidth = Math.ceil(digitImg.width * scaleRatio);
 
 			// need to (re)cache digit?

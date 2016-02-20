@@ -3,7 +3,8 @@ var Text = (function Text(){
 
 	var publicAPI,
 		characters,
-		cache;
+		cache,
+		charList;
 
 	characters = {
 		small: [
@@ -17,6 +18,8 @@ var Text = (function Text(){
 	};
 
 	cache = {};
+
+	charList = [];
 
 	publicAPI = {
 		load: load,
@@ -80,14 +83,22 @@ var Text = (function Text(){
 		);
 	}
 
-	function getText(textType,str) {
-		return str.split("").map(function mapper(char){
-			for (var i=0; i<characters[textType].length; i++) {
-				if (characters[textType][i].char === char) {
-					return characters[textType][i].img;
+	function getText(textType,str,arr) {
+		if (!arr) arr = charList;
+		arr.length = str.length;
+
+		for (var i=0; i<str.length; i++) {
+			var char = str[i];
+
+			for (var j=0; j<characters[textType].length; j++) {
+				if (characters[textType][j].char === char) {
+					arr[i] = characters[textType][j].img;
+					break;
 				}
 			}
-		});
+		}
+
+		return arr;
 	}
 
 	function cacheCharacter(cacheID) {
