@@ -303,7 +303,7 @@ var RetryScreen = (function RetryScreen(){
 			var bestScoreBadgeHeight = screen.hitAreas[0].y2 - screen.hitAreas[0].y1 + 1;
 
 			var tmp0 = Text.getText("small","0")[0];
-			var bestScoreDigits = Text.getText("small",String(Game.gameState.bestCloudScore[Game.gameState.difficulty]));
+			var bestScoreDigits = Text.getText("small",String(Game.gameState.bestCloudScores[Game.gameState.difficulty]));
 
 			var actualScoreWidth = 0;
 			var actualScoreHeight = 0;
@@ -327,7 +327,7 @@ var RetryScreen = (function RetryScreen(){
 
 			// display best-score text one character at a time
 			for (var i=0; i<bestScoreDigits.length; i++) {
-				var scoreDigit = String(Game.gameState.bestCloudScore[Game.gameState.difficulty]).charAt(i);
+				var scoreDigit = String(Game.gameState.bestCloudScores[Game.gameState.difficulty]).charAt(i);
 				var digitWidth = Math.ceil(bestScoreDigits[i].width * ratio);
 				var scaledCachedDigit = Text.getCachedCharacter("bestscore:" + scoreDigit);
 

@@ -1,45 +1,91 @@
-var Storage = (function Storage() {
+var Storage = (function Storage(){
 
-	var publicAPI, ls, settings;
+	var publicAPI,
+		defaultSettings,
+		settings = {},
 
-	ls = localStorage;
-	settings = {
-		build_version: Debug.BUILD_VERSION,
-		best_score: [0, 0, 0]
-	};
+		STORAGE_KEY = "cloud-sweeper-settings";
+
 
 	publicAPI = {
 		updateBestScore: updateBestScore,
-	}
+		loadStoredSettings: loadStoredSettings,
+		getSettings: getSettings,
+		saveSettings: saveSettings,
+	};
 
 	return publicAPI;
 
-	function updateBestScore(difficulty, score) {
-		if (typeof ls === "undefined") {
-			return score;
+
+	// ******************************
+
+	function loadStoredSettings() {
+		defaultSettings = defaultSettings || {
+			build_version: Debug.BUILD_VERSION,
+			best_scores: [0, 0, 0, ],
+		};
+
+		try {
+			var storedSettings = JSON.parse(
+				Browser.localStorage.getItem(STORAGE_KEY)
+			);
+
+			// merge-update the settings structure
+			Utils.deepMerge(storedSettings,defaultSettings);
+			Utils.deepMerge(settings,storedSettings);
+
+			// if build-version has changed, reset best scores
+			resetBestScores();
+
+			// update settings to current build version
+			settings.build_version = default_settings.build_version;
 		}
-		var maxScore = score;
-		var getStorageScore = JSON.parse(ls.getItem("cloud-sweeper-settings"));
-
-		if (getStorageScore) {
-			// overwrite the template
-			settings = getStorageScore;
-			var storedBuildVersion = settings.build_version.split(".");
-			var actualBuildVersion = Debug.BUILD_VERSION.split(".");
-
-			if (storedBuildVersion[0] !== actualBuildVersion[0] || storedBuildVersion[1] !== actualBuildVersion[1]) {
-				// reset all scores, when there was a minor/major update
-				settings.best_score = [0, 0, 0]
+		catch (err) {
+			if (Browser.localStorage) {
+				Browser.localStorage.removeItem(STORAGE_KEY);
 			}
-			maxScore = Math.max(
-				score,
-				settings.best_score[difficulty]
+
+			// clone the default-settings object
+			Utils.deepMerge(settings,defaultSettings);
+		}
+
+		saveSettings();
+	}
+
+	function getSettings() {
+		return settings;
+	}
+
+	function saveSettings() {
+		try {
+			Browser.localStorage.setItem(STORAGE_KEY,
+				JSON.stringify(settings)
 			);
 		}
-		settings.build_version = Debug.BUILD_VERSION;
-		settings.best_score[difficulty] = maxScore;
-		ls.setItem("cloud-sweeper-settings", JSON.stringify(settings));
-		return maxScore;
+		catch (err) {
+			console.log(err);
+		}
+	}
+
+	function resetBestScores() {
+		var storedBuildVersion = settings.build_version.split(".");
+		var actualBuildVersion = defaultSettings.build_version.split(".");
+
+		// has there been a minor/major version update?
+		if (storedBuildVersion[0] !== actualBuildVersion[0] ||
+			storedBuildVersion[1] !== actualBuildVersion[1]
+		) {
+			// reset all best scores
+			settings.best_scores[0] = settings.best_scores[1] =
+				settings.best_scores[2] = 0;
+		}
+	}
+
+	function updateBestScore(difficulty,score) {
+		if (score != settings.best_scores[difficulty]) {
+			settings.best_scores[difficulty] = score;
+			saveSettings();
+		}
 	}
 
 })();

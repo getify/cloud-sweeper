@@ -2,7 +2,7 @@ var Game = (function Game(){
 	"use strict";
 
 	Debug.ON = true;
-	Debug.BUILD_VERSION = "1.0.18";
+	Debug.BUILD_VERSION = "1.1.0";
 
 	var publicAPI,
 
@@ -26,8 +26,9 @@ var Game = (function Game(){
 		difficulty: GAME_EASY,
 	};
 
-	Browser.setupEvents(onViewportSize);
 
+	Storage.loadStoredSettings();
+	Browser.setupEvents(onViewportSize);
 	Debug.resetFramerate();
 
 	// initialize UI
@@ -152,13 +153,12 @@ var Game = (function Game(){
 	}
 
 	function manageBestCloudScore() {
-		var maxScore =
-			Math.max(
-				gameState.cloudScore,
-				gameState.bestCloudScore[gameState.difficulty]
-			);
-			var getBestScore = Storage.updateBestScore(gameState.difficulty, maxScore);
-			gameState.bestCloudScore[gameState.difficulty] = getBestScore;
+		gameState.bestCloudScores[gameState.difficulty] = Math.max(
+			gameState.cloudScore,
+			gameState.bestCloudScores[gameState.difficulty]
+		);
+
+		Storage.updateBestScore(gameState.difficulty,gameState.bestCloudScores[gameState.difficulty]);
 	}
 
 	function cleanupRecycle() {
@@ -210,10 +210,11 @@ var Game = (function Game(){
 	function initGame() {
 		gameState.RAFhook = null;
 
-		gameState.bestCloudScore = gameState.bestCloudScore || {};
-		gameState.bestCloudScore[GAME_EASY] = gameState.bestCloudScore[GAME_EASY] || 0;
-		gameState.bestCloudScore[GAME_MEDIUM] = gameState.bestCloudScore[GAME_MEDIUM] || 0;
-		gameState.bestCloudScore[GAME_HARD] = gameState.bestCloudScore[GAME_HARD] || 0;
+		var settings = Storage.getSettings();
+		gameState.bestCloudScores = gameState.bestCloudScores || [];
+		gameState.bestCloudScores[GAME_EASY] = gameState.bestCloudScores[GAME_EASY] || settings.best_scores[GAME_EASY];
+		gameState.bestCloudScores[GAME_MEDIUM] = gameState.bestCloudScores[GAME_MEDIUM] || settings.best_scores[GAME_MEDIUM];
+		gameState.bestCloudScores[GAME_HARD] = gameState.bestCloudScores[GAME_HARD] || settings.best_scores[GAME_HARD];
 
 		gameState.welcomeEntering = false;
 		gameState.welcomeWaiting = false;

@@ -1,7 +1,8 @@
 var Browser = (function Browser(){
 
 	var publicAPI,
-		lockOrientation;
+		lockOrientation,
+		ls;
 
 	lockOrientation =
 		(window.screen.lockOrientation ?
@@ -18,6 +19,8 @@ var Browser = (function Browser(){
 		) ||
 		null;
 
+	ls = window.localStorage || null;
+
 
 	publicAPI = {
 		setupEvents: setupEvents,
@@ -31,6 +34,7 @@ var Browser = (function Browser(){
 		DOMReady: (document.readyState == "complete"),
 		viewportDims: {},
 		orientationLocked: false,
+		localStorage: ls,
 	};
 
 	return publicAPI;
