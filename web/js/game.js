@@ -2,7 +2,7 @@ var Game = (function Game(){
 	"use strict";
 
 	Debug.ON = true;
-	Debug.BUILD_VERSION = "1.0.17";
+	Debug.BUILD_VERSION = "1.0.18";
 
 	var publicAPI,
 
@@ -152,11 +152,13 @@ var Game = (function Game(){
 	}
 
 	function manageBestCloudScore() {
-		gameState.bestCloudScore[gameState.difficulty] =
+		var maxScore =
 			Math.max(
 				gameState.cloudScore,
 				gameState.bestCloudScore[gameState.difficulty]
 			);
+			var getBestScore = Storage.updateBestScore(gameState.difficulty, maxScore);
+			gameState.bestCloudScore[gameState.difficulty] = getBestScore;
 	}
 
 	function cleanupRecycle() {
